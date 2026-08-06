@@ -1,0 +1,19 @@
+Index: aash0030/src/Actions/CollectAction.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package Actions;\r\nimport FarmEntities.Farmer;\r\n\r\n/**\r\n * CollectionAction is a class that represents the execution of collecting from something\r\n * When executed, this action checks whether the object can produce an item,\r\n * and if so, adds it to the {@code Farmer}'s inventory.\r\n * </p>\r\n *\r\n * @author Angus Ashby\r\n * @version 1.0.0\r\n */\r\n\r\npublic class CollectAction implements Action {\r\n    private Collectible collectible;\r\n\r\n\r\n    /**\r\n     * Constructs a new collect action with the specified collectible object.\r\n     *\r\n     * @param collectible the collectible object to collect from\r\n     */\r\n\r\n    public CollectAction(Collectible collectible) {\r\n        this.collectible = collectible;\r\n    }\r\n    /**\r\n     * Executes the collect action\r\n     * If the object can produce an item, it is added to the farmer's inventory.\r\n     *\r\n     * @param farmer the farmer performing the collection\r\n     * @return a message describing the outcome of the action\r\n     */\r\n    @Override\r\n    public String execute(Farmer farmer){\r\n        if (collectible.canProduce()){\r\n            farmer.addItemToInventory(collectible.produce());\r\n            return collectible.getClass().getSimpleName() + \" has been collected from\";\r\n        }\r\n        return collectible.getClass().getSimpleName() + \" is too hungry to be collected from\";\r\n    }\r\n    /**\r\n     * Provides a description of this collect action for use in menus.\r\n     *\r\n     * @return a string describing the action\r\n     */\r\n    @Override\r\n    public String menuDescription(){\r\n        return \"Collect from this \" + collectible.getClass().getSimpleName();\r\n    }\r\n}\r\n\r\n
+===================================================================
+diff --git a/aash0030/src/Actions/CollectAction.java b/aash0030/src/Actions/CollectAction.java
+--- a/aash0030/src/Actions/CollectAction.java	(revision 440e4fbb3d764c8d2380be89c1e1f4202676ad55)
++++ b/aash0030/src/Actions/CollectAction.java	(date 1744100500157)
+@@ -4,8 +4,8 @@
+ /**
+  * CollectionAction is a class that represents the execution of collecting from something
+  * When executed, this action checks whether the object can produce an item,
+- * and if so, adds it to the {@code Farmer}'s inventory.
+- * </p>
++ * and if so, adds it to the Farmers inventory.
++ *
+  *
+  * @author Angus Ashby
+  * @version 1.0.0

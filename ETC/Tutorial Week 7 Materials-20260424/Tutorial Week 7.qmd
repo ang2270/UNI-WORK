@@ -1,0 +1,238 @@
+---
+title: "Week 7 Tutorial Solutions"
+format: 
+       pdf:
+        papersize: A4
+editor: visual
+---
+
+\definecolor{awesome}{rgb}{1.0,0.13,0.32}
+\definecolor{bondiblue}{rgb}{0.0,0.58,0.71}
+
+### Introduction
+
+This workshop will help you familiarize yourself with the AR time-series model and the EMH.
+
+### AR(p) models
+
+Recall that a time series $y_{t}$ for $t=\left\{\ldots ,-1,0,1,2,\ldots\right\}$ is an \textbf{AR(p) process} if $$y_{t}=c+\phi _{1}y_{t-1}+\phi _{2}y_{t-2}+\ldots +\phi_{p}y_{t-p}+\varepsilon _{t},$$ where $\varepsilon _{t}\sim WN\left( 0,\sigma _{\varepsilon }^{2}\right)$ (white noise) and $V\left(\varepsilon_{t}|\mathcal{F}_{t-1}\right)=V\left( \varepsilon _{t}\right)$. $\mathcal{F}_{t-1}$ represents all information available to the econometrician at time $t$.
+
+The AR(p) model is simply a multiple linear regression model with regressors being $y_{t-1},y_{t-2},\ldots ,y_{t-p}$. Therefore, the coefficients $\phi_{1},\phi _{2},\ldots ,\phi _{p}$ can be estimated as $$\left( c,\hat{\phi}_{1},\ldots ,\hat{\phi}_{p}\right) ^{\prime }=\arg \min\sum_{t=1+p}^{T}\left( y_{t}-c-\phi _{1}y_{t-1}-\phi _{2}y_{t-2}-\ldots-\phi _{p}y_{t-p}\right) ^{2}.$$
+
+The autocorrelations of the AR(p) process display a constant pattern of decay. For example, in the AR(1) model, the autocorrelations decay as $\phi_{1}^{k}$, for $k=1,2,\ldots .$
+
+\bigskip
+
+## Question 1
+
+Consider an AR(1) process given by $$y_{t}=\phi _{1}y_{t-1}+\varepsilon _{t},$$ where $\varepsilon _{t}\sim _{iid}WN\left( 0,\sigma _{\varepsilon}^{2}\right)$ (white noise). In order for this process to be stationary we require that condition $\left\vert \phi _{1}\right\vert <1$ be met. Even when $\left\vert \phi _{1}\right\vert <1$, the absolute value of $\phi _{1}$ determines the \`persistence' of the process. To illustrate this point:
+
+1.  Run the code below to generate 3 series of 500 observations of an AR(1) process where \textcolor{bondiblue}{$\phi _{1}=0.1,0.8$ and $-0.8$} respectively. Plot each of these series. Briefly comment on these realisations.
+
+```{r}
+set.seed(12345678) #so we all get the same answers!
+
+n <- 500
+
+############################
+# phi = 0.1
+phi <- 0.1
+
+eps.0.1 <- rnorm(n, mean = 0, sd = 1)
+
+x.0.1 <- numeric(n)
+x.0.1[1] <- 0   # initial value
+
+for (t in 2:n) {
+  x.0.1[t] <- phi * x.0.1[t - 1] + eps.0.1[t]
+}
+
+plot(x.0.1, type = "l", main = "AR(1) phi = 0.1")
+
+############################
+# phi = 0.8
+phi <- 0.8
+
+eps.0.8 <- rnorm(n, mean = 0, sd = 1)
+
+x.0.8 <- numeric(n)
+x.0.8[1] <- 0   # initial value
+
+for (t in 2:n) {
+  x.0.8[t] <- phi * x.0.8[t - 1] + eps.0.8[t]
+}
+
+plot(x.0.8, type = "l", main = "AR(1) phi = 0.8")
+
+############################
+# phi = -0.8
+phi <- -0.8
+
+eps.0.n8 <- rnorm(n, mean = 0, sd = 1)
+
+x.0.n8 <- numeric(n)
+x.0.n8[1] <- 0   # initial value
+
+for (t in 2:n) {
+  x.0.n8[t] <- phi * x.0.n8[t - 1] + eps.0.n8[t]
+}
+
+plot(x.0.n8, type = "l", main = "AR(1) phi = -0.8")
+
+# optional
+# if you want to put dates on the simulated data, using xts object
+# library(xts)
+#dates <- seq.Date(from = as.Date("2020-01-01"), by = "day", length.out = n)
+#x.0.1.xts <- xts(as.numeric(x.0.1), order.by = dates)
+#colnames(x.0.1.xts) <- "x phi 0.1"
+
+#head(x.0.1.xts)
+#plot(x.0.1.xts, main = "Simulated AR(1) phi = 0.1")
+```
+
+\textcolor{bondiblue}{Notice that when persistence is low ($\phi_1=0.1$), the line plot is more jagged. The series does not stay above or below 0 for long. When $\phi_1=0.8$, there are longer periods where the series stays above an below 0, indicating stronger persistence. When $\phi_1=-0.8$, the persistence shows as clustering. Each positive observation must be fol1owed with a negative one, so the graph crosses 0 each time, but the width of the value is similar. Most of the time in econometrics, if there is persistence, $\phi_1>0$, but it must be strictly less than one in absolute value to be (weakly) stationary (\textit{i.e.} $|\phi_1|<1$).} \smallskip
+
+5.  Use the code below to produce the correlograms for each of the time series created above. Briefly discuss.
+
+\textcolor{bondiblue}{Identifying persistence is easier if we use the correlograms. In the ACF, if there is persistence with \textbf{positive} correlation, the spikes will gradually approach zero in a smooth (wavy) way. The stronger the persistence, the longer it takes to become zero (like a fence). If there is persistence with \textbf{negative} correlation, we will have alternating spikes.}
+
+```{r}
+# Use the Correlogram.R function from last week
+
+source("Correlogram.R")
+correlogram(x.0.1,20,main.acf  = "phi = 0.1")
+
+correlogram(x.0.8,20,main.acf  = "phi = 0.8")
+
+correlogram(x.0.n8, max.lag = 20 , main.acf  = "phi = -0.8")
+
+```
+
+-   \textcolor{bondiblue}{When $\phi=0.1$, the spikes go to zero quickly, then become significant again around observations 10-15, in a small wave. This is typical of weaker persistence.}
+
+-   \textcolor{bondiblue}{When $\phi=0.8$, persistence is stronger and the spikes gradually go to 0 by about observation 8.}
+
+-   \textcolor{bondiblue}{When $\phi=-0.8$, persistence is strong as it is identical to when $\phi=0.8$, except it has alternating positive and negative spikes.}
+
+\textcolor{bondiblue}{Typically, we observe positive correlations (if any). Using the correlograms to identify patterns and check for persistence is important for the rest of the unit.}
+
+## Question 2
+
+An implication of the Efficient Market Hypothesis (EMH) is that there should be no predictable pattern in financial log returns; that is, they should behave randomly over time.
+
+Now consider the hourly observations of the US dollar–Deutsche Mark ($USD/DM$) exchange rate from 00:00 on 1 January 1986 to 11:00 on 15 July 1986. These data are available in the file \textcolor{bondiblue}{\textbf{usd\_dm.xlsx}} on Moodle.
+
+-   Compute the log returns on the $USD/DM$ exchange rate.
+
+-   True or False? The $USD/DM$ foreign exchange market is efficient. Explain your answer.
+
+\textcolor{bondiblue}{First, let's plot the data and then the  log return series (defined as $r_t = log(1+R_t)$ where $R_t$ is the simple return. Run the code below.}
+
+```{r, message=FALSE}
+
+library(xts)
+
+usdm <- readxl::read_excel("usd_dm.xlsx")
+
+# Convert datetime column to POSIXct
+usdm$datetime <- as.POSIXct(usdm$datetime, tz = "UTC")
+
+# Convert to xts
+usd_dm.xts <- xts(usdm[, setdiff(names(usdm), "datetime")], 
+                  order.by = usdm$datetime)
+
+# log return
+logret <- na.omit(diff(log(usd_dm.xts)))  
+
+# plot
+plot(usd_dm.xts, main = "USD-DM exchange rate")
+
+# plot log return
+plot(logret, main = "log return")
+
+```
+
+\textcolor{bondiblue}{The exchange rate series is not stationary, however the log-returns are. This is revision, but we need to always perform a visual check - even if we don't use it for anything (\textit{e.g.} in a report).}
+
+\textcolor{bondiblue}{Let $\gamma(k)$ be the autocorrelation function of $r_t$.}
+
+\textcolor{bondiblue}{Test of EMH: $$H_0: \gamma(k) = 0 $$ $$ H_1: \gamma(k) \ne 0 $$ The test statistic = $\sqrt{T}\hat\gamma(k)$. We reject $H_0$ if $|\sqrt{T}\hat\gamma(k)|>1.96$.}
+
+\smallskip
+
+\textcolor{bondiblue}{Run the code below to get the $\hat\gamma(k)$'s and the correlogram for the log-returns.}
+
+```{r}
+source("Correlogram.R")
+# in the correlogram function "fit = NULL"
+correlogram(logret,max.lag = 10)
+```
+
+\textcolor{bondiblue}{The EMH can be tested by testing $\hat\gamma(1)$ from the correlogram (column AC). We have $USD/DM: \hat\gamma(1) =-0.022$, with a calculated test statistic = $|\sqrt{3189}*(-0.022)| = 1.2424.$ Since this is < 1.96, we cannot reject $H_0$ at the 5\% level of significance (in fact, none of the $\hat\gamma(i)$'s in the correlogram are significantly different from zero).}
+
+\textcolor{bondiblue}{\textit{NOTE: this is similar to the Q-stat in the table (the Ljung-Box test), but they are not exactly the same - hence the difference in values, but not the decision.}}
+
+\textcolor{bondiblue}{We cannot reject the EMH for log returns of $USD/DM$ exchange rate. This implies that the returns are not predictable and hence these results are consistent with the EMH.}
+
+\textcolor{bondiblue}{We can also use the BG test for autocorrelation of the residuals (we will test for serial correlation up to order 2):}
+
+\textcolor{bondiblue}{$$\hat{\varepsilon}_t = r_t - \bar{r}, \quad \bar{r} = \frac{1}{T} \sum_{t=1}^{T} r_t.$$}
+
+\textcolor{bondiblue}{Using the auxiliary regression model $$\hat{\varepsilon}_t = \gamma_0 + \gamma_1 \hat{\varepsilon}_{t-1} + \gamma_2 \hat{\varepsilon}_{t-2} + v_t$$ where $v_t$ is some random disturbance term.}
+
+\textcolor{bondiblue}{$$H_0 : \gamma_1 = \gamma_2 = 0 \quad \text{[EMH is satisfied]}$$} \textcolor{bondiblue}{$$H_1 : \gamma_1 \text{  and/or  } \gamma_2 \neq 0 \quad \text{[EMH is NOT satisfied]}$$}
+
+\textcolor{bondiblue}{From the auxiliary regression model: $$\hat{\varepsilon}_t = \gamma_0 + \gamma_1 \hat{\varepsilon}_{t-1} + \gamma_2 \hat{\varepsilon}_{t-2} + v_t,$$}
+
+\textcolor{bondiblue}{the test statistic $W = T \cdot R^2 \sim \chi^2_2 \text{ under } H_0.$}
+
+```{r}
+# LM test
+library(lmtest)
+fit <- lm(logret ~ 1) # run this to generate errors for LM test
+bgtest(fit, order = 2, type = "Chisq")
+```
+
+The p-value of the BG test is 0.2507. This.....
+
+\newpage
+
+## Question 3
+
+Next, consider the monthly stock returns of the Coca-Cola Company (ticker symbol: KO) from January 1961 to September 2011. The simple returns are stored in the file \textcolor{bondiblue}{\textbf{coca\_cola.xlsx}}.
+
+\textcolor{bondiblue}{Run the code below to create log-returns and convert to \textbf{xts}. Copy and modify the code from Q2 to answer the question. A plot of the log returns is below.}
+
+```{r}
+coke <- readxl::read_excel("coca_cola.xlsx")   # <-- change filename
+
+# ignore the date column
+coke = coke[,2]
+
+# Jan 1961 to Sept 2011
+idx <- seq(from = as.Date("1961-01-01"), by = "month", 
+           length.out = nrow(coke))
+KO.xts <- xts(coke, order.by = idx)
+
+
+# just display month-year without date
+index(KO.xts) <- as.yearmon(index(KO.xts))  # match by year-month
+
+# Transform the simple returns to log returns
+logret1 <- log(1+KO.xts)
+
+# plot
+plot(logret1, main = "KO log-return")
+```
+
+-   True or False? The log returns of KO are consistent with the EMH. Explain your answer.
+
+\textcolor{bondiblue}{Run the code below to create log-returns and convert to \textbf{xts}. Copy and modify the code from Q2 to answer the question. Also, plot the log returns.}
+
+**Put code chunk here**
+
+The correlogram is:
+
+**Put code chunk here**
+
+Do the BG test like in Q2 and write full answers here.

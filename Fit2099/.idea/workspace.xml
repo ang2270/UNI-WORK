@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="41ec6f6c-2b3f-4121-bf7b-faf11c160087" name="Changes" comment="added Design Rationale">
+      <change beforePath="$PROJECT_DIR$/aash0030/src/Actions/CollectAction.java" beforeDir="false" afterPath="$PROJECT_DIR$/aash0030/src/Actions/CollectAction.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+        <option value="Interface" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/aash0030" value="BootcampWeek4" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/aash0030" />
+  </component>
+  <component name="GitLabMergeRequestFiltersHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPENED&quot;,
+    &quot;assignee&quot;: {
+      &quot;type&quot;: &quot;org.jetbrains.plugins.gitlab.mergerequest.ui.filters.GitLabMergeRequestsFiltersValue.MergeRequestsMemberFilterValue.MergeRequestsAssigneeFilterValue&quot;,
+      &quot;username&quot;: &quot;aash0030&quot;,
+      &quot;fullname&quot;: &quot;aash0030&quot;
+    }
+  }
+}</component>
+  <component name="GitLabMergeRequestsSettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;first&quot;: &quot;https://git.infotech.monash.edu/fit2099/fit2099-s1-2025/bootcamps/aash0030.git&quot;,
+    &quot;second&quot;: &quot;e3e7bf4e-d3d4-498a-86e0-402659752ce5&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2v7N3QeLVOIS7lKi06S9KQ6sPvc" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Application.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "BootcampWeek5",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/angus/Documents/Monash/Fit2099",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.general",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="41ec6f6c-2b3f-4121-bf7b-faf11c160087" name="Changes" comment="" />
+      <created>1743491955292</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1743491955292</updated>
+      <workItem from="1743491957163" duration="5772000" />
+      <workItem from="1744079043280" duration="50000" />
+      <workItem from="1744082732120" duration="16000" />
+    </task>
+    <task id="LOCAL-00001" summary="Added experience points to farmer, started working on sellingaction and added xp check to magic farm">
+      <option name="closed" value="true" />
+      <created>1744079352443</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1744079352443</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Added sell logiv to Egg, Milk, MagicCow and MagicShark. Implemented sellable interface and SellAction">
+      <option name="closed" value="true" />
+      <created>1744082573240</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1744082573240</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Added expeirence effects from selling items. Added items sellable to addmenuactions. fixed return type compatibilty errors">
+      <option name="closed" value="true" />
+      <created>1744085099930</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1744085099930</updated>
+    </task>
+    <task id="LOCAL-00004" summary="added Design Rationale">
+      <option name="closed" value="true" />
+      <created>1744099826223</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1744099826223</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added experience points to farmer, started working on sellingaction and added xp check to magic farm" />
+    <MESSAGE value="Added sell logiv to Egg, Milk, MagicCow and MagicShark. Implemented sellable interface and SellAction" />
+    <MESSAGE value="Added expeirence effects from selling items. Added items sellable to addmenuactions. fixed return type compatibilty errors" />
+    <MESSAGE value="added Design Rationale" />
+    <option name="LAST_COMMIT_MESSAGE" value="added Design Rationale" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.ClassNotFoundException" package="java.lang" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

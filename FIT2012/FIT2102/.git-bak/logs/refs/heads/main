@@ -1,4 +1,0 @@
-0000000000000000000000000000000000000000 f2500d7fe625ceca9d8aa59ac57c84cb43f558ba aash0030 <aash0030@student.monash.edu> 1785984608 +1000	clone: from https://github.com/ang2270/FIT2102.git
-f2500d7fe625ceca9d8aa59ac57c84cb43f558ba 38b93831053654d93ebede78216845d6ad3c35ae aash0030 <aash0030@student.monash.edu> 1785989631 +1000	pull --tags origin main: Fast-forward
-38b93831053654d93ebede78216845d6ad3c35ae f6fa6adcb50e82ebb4895f64c1f40e821dad2e25 aash0030 <aash0030@student.monash.edu> 1786008272 +1000	pull --rebase origin main (finish): refs/heads/main onto f6fa6adcb50e82ebb4895f64c1f40e821dad2e25
-f6fa6adcb50e82ebb4895f64c1f40e821dad2e25 84bed6c49012d35c45d52e1f0d71089991eafa6b aash0030 <aash0030@student.monash.edu> 1786008312 +1000	commit: Add tutorial 2 project

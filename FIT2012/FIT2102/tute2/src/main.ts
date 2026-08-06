@@ -189,7 +189,7 @@ const depthBinaryTree = <T>(tree: BinaryTree<T>): number => {
     const rightDepth = tree.right ? depthBinaryTree(tree.right) : 0;
     
     return 1 + Math.max(leftDepth, rightDepth);
-};
+};3
 
 /**
  * Applies a function to each value in a binary tree, returning a new tree with the same shape.

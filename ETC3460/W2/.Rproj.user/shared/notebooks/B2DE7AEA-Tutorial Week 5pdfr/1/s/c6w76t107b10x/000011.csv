@@ -1,0 +1,4 @@
+"0","# log return for both msft and wmt"
+"0","logret.xts <- diff(log(prices.xts)) "
+"0","logret.xts <- na.omit(logret.xts)   # removes the first NA created by diff()"
+"0","colnames(logret.xts) <- c(""msft"", ""wmt"")  # name the column"

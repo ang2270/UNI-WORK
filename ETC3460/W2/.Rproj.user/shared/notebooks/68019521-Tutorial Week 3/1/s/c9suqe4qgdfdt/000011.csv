@@ -1,0 +1,2 @@
+"0","hist(X2, main = ""Histogram of X2"", xlab = ""X2 values"", "
+"0","     col = ""salmon"", border = ""black"")"

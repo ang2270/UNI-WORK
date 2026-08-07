@@ -1,0 +1,6 @@
+"0","# histogram for Close"
+"0","hist(nasdaq.xts$Close,"
+"0","     breaks = 30,"
+"0","     main = ""Histogram"","
+"0","     xlab = colnames(nasdaq.xts)[4]) # column name"
+"0",""

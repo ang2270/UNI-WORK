@@ -1,0 +1,659 @@
+---
+title: "ETC3460 Assignment 1 Part 1"
+format:
+  pdf:
+    fontsize: 11pt
+    geometry: top=2cm, bottom=2cm, left=2.5cm, right=2.5cm
+    number-sections: false
+    include-before-body: 
+      text: '\vspace{-1cm}'
+---
+
+Angus Ashby
+
+## Question 1
+
+a)  
+
+```{r}
+#| echo: false
+MFST.mew <- 0.12
+SBUX.mew <- 0.10
+
+MSFT.sigma <- 0.3
+SBUX.sigma <- 0.2
+```
+
+let cor =
+0.0417$$0.0417 = \frac{Cov(MSFT,SBUX)}{0.3 \times 0.2}$$$$Cov(MSFT,SBUX) = 0.002502$$
+
+```{r}
+#| echo: false
+
+# 1. Variable Assignments
+cov.cov <- 0.002502
+
+p1.mew <- SBUX.mew
+p1.sigma <- SBUX.sigma
+p2.mew <- (0.1 * MFST.mew) + (0.9 * SBUX.mew)  
+p2.sigma <- sqrt((0.1^2 * MSFT.sigma^2) + (0.9^2 * SBUX.sigma^2) + 2*(0.1*0.9 * cov.cov))
+p3.mew <- (0.2 * MFST.mew) + (0.8 * SBUX.mew)  
+p3.sigma <- sqrt((0.2^2 * MSFT.sigma^2) + (0.8^2 * SBUX.sigma^2) + 2*(0.2*0.8 * cov.cov))
+p4.mew <- (0.3 * MFST.mew) + (0.7 * SBUX.mew)  
+p4.sigma <- sqrt((0.3^2 * MSFT.sigma^2) + (0.7^2 * SBUX.sigma^2) + 2*(0.3*0.7 * cov.cov))
+p5.mew <- (0.4 * MFST.mew) + (0.6 * SBUX.mew)  
+p5.sigma <- sqrt((0.4^2 * MSFT.sigma^2) + (0.6^2 * SBUX.sigma^2) + 2*(0.4*0.6 * cov.cov))
+p6.mew <- (0.5 * MFST.mew) + (0.5 * SBUX.mew)  
+p6.sigma <- sqrt((0.5^2 * MSFT.sigma^2) + (0.5^2 * SBUX.sigma^2) + 2*(0.5*0.5 * cov.cov))
+p7.mew <- (0.6 * MFST.mew) + (0.4 * SBUX.mew)  
+p7.sigma <- sqrt((0.6^2 * MSFT.sigma^2) + (0.4^2 * SBUX.sigma^2) + 2*(0.6*0.4 * cov.cov))
+p8.mew <- (0.7 * MFST.mew) + (0.3 * SBUX.mew)  
+p8.sigma <- sqrt((0.7^2 * MSFT.sigma^2) + (0.3^2 * SBUX.sigma^2) + 2*(0.7*0.3 * cov.cov))
+p9.mew <- (0.8 * MFST.mew) + (0.2 * SBUX.mew)  
+p9.sigma <- sqrt((0.8^2 * MSFT.sigma^2) + (0.2^2 * SBUX.sigma^2) + 2*(0.2*0.8 * cov.cov))
+p10.mew <- (0.9 * MFST.mew) + (0.1 * SBUX.mew)  
+p10.sigma <- sqrt((0.9^2 * MSFT.sigma^2) + (0.1^2 * SBUX.sigma^2) + 2*(0.9*0.1 * cov.cov))
+p11.mew <- MFST.mew
+p11.sigma <- MSFT.sigma
+
+# 2. Data Aggregation
+portfolio_results <- data.frame(
+  Portfolio = 1:11,
+  Expected_Return = c(p1.mew, p2.mew, p3.mew, p4.mew, p5.mew, p6.mew, p7.mew, p8.mew, p9.mew, p10.mew, p11.mew),
+  S.Deviation = c(p1.sigma, p2.sigma, p3.sigma, p4.sigma, p5.sigma, p6.sigma, p7.sigma, p8.sigma, p9.sigma, p10.sigma, p11.sigma)
+)
+
+# 3. Table Rendering
+knitr::kable(portfolio_results, caption = "Portfolio Expected Returns and Standard Deviation")
+```
+
+b)  The Global minimum Variance (GMV) portfolio defined as the lowest
+    variance portfolio. Based purely on answers to Part a with 11
+    portfolios to choose from, the GMV is given by portfolio 4 with 70%
+    weight on SBUX and 30% weight on MSFT giving a variance of 0.0288
+
+c)  
+
+let cor =
+-1$$-1 = \frac{Cov(MSFT,SBUX)}{0.3 \times 0.2}$$$$Cov(MSFT,SBUX) = -0.06$$
+
+```{r}
+#| echo: false
+
+# 1. Variable Assignments (Execution occurs silently)
+cov.cov <- -0.06
+
+p1.mew <- SBUX.mew
+p1.sigma <- SBUX.sigma
+p2.mew <- (0.1 * MFST.mew) + (0.9 * SBUX.mew)  
+p2.sigma <- sqrt((0.1^2 * MSFT.sigma^2) + (0.9^2 * SBUX.sigma^2) + 2*(0.1*0.9 * cov.cov))
+p3.mew <- (0.2 * MFST.mew) + (0.8 * SBUX.mew)  
+p3.sigma <- sqrt((0.2^2 * MSFT.sigma^2) + (0.8^2 * SBUX.sigma^2) + 2*(0.2*0.8 * cov.cov))
+p4.mew <- (0.3 * MFST.mew) + (0.7 * SBUX.mew)  
+p4.sigma <- sqrt((0.3^2 * MSFT.sigma^2) + (0.7^2 * SBUX.sigma^2) + 2*(0.3*0.7 * cov.cov))
+p5.mew <- (0.4 * MFST.mew) + (0.6 * SBUX.mew)  
+p5.sigma <- sqrt((0.4^2 * MSFT.sigma^2) + (0.6^2 * SBUX.sigma^2) + 2*(0.4*0.6 * cov.cov))
+p6.mew <- (0.5 * MFST.mew) + (0.5 * SBUX.mew)  
+p6.sigma <- sqrt((0.5^2 * MSFT.sigma^2) + (0.5^2 * SBUX.sigma^2) + 2*(0.5*0.5 * cov.cov))
+p7.mew <- (0.6 * MFST.mew) + (0.4 * SBUX.mew)  
+p7.sigma <- sqrt((0.6^2 * MSFT.sigma^2) + (0.4^2 * SBUX.sigma^2) + 2*(0.6*0.4 * cov.cov))
+p8.mew <- (0.7 * MFST.mew) + (0.3 * SBUX.mew)  
+p8.sigma <- sqrt((0.7^2 * MSFT.sigma^2) + (0.3^2 * SBUX.sigma^2) + 2*(0.7*0.3 * cov.cov))
+p9.mew <- (0.8 * MFST.mew) + (0.2 * SBUX.mew)  
+p9.sigma <- sqrt((0.8^2 * MSFT.sigma^2) + (0.2^2 * SBUX.sigma^2) + 2*(0.2*0.8 * cov.cov))
+p10.mew <- (0.9 * MFST.mew) + (0.1 * SBUX.mew)  
+p10.sigma <- sqrt((0.9^2 * MSFT.sigma^2) + (0.1^2 * SBUX.sigma^2) + 2*(0.9*0.1 * cov.cov))
+p11.mew <- MFST.mew
+p11.sigma <- MSFT.sigma
+
+# 2. Data Aggregation
+# Compiling the isolated variables into a structured data frame
+portfolio_results <- data.frame(
+  Portfolio = 1:11,
+  Expected_Return = c(p1.mew, p2.mew, p3.mew, p4.mew, p5.mew, p6.mew, p7.mew, p8.mew, p9.mew, p10.mew, p11.mew),
+  S.Deviation = c(p1.sigma, p2.sigma, p3.sigma, p4.sigma, p5.sigma, p6.sigma, p7.sigma, p8.sigma, p9.sigma, p10.sigma, p11.sigma)
+)
+
+# 3. Table Rendering
+knitr::kable(portfolio_results, caption = "Portfolio Expected Returns and Standard Deviations")
+```
+
+d)  The Global minimum Variance (GMV) portfolio defined as the lowest
+    variance portfolio. Based purely on answers to Part c with 11
+    portfolios to choose from, the GMV is given by portfolio 5 with 60%
+    weight on SBUX and 40% weight on MSFT giving a variance 6.9389 \*
+    10\^-18
+
+e)  
+
+Note: $$W = X_a^2$$ ![Handwritten
+Answer](C:/Users/angus/Downloads/pdf2png/Adobe%20Scan%2010%20Apr%202026/Adobe%20Scan%2010%20Apr%202026-1.png)
+From the equation 2 we can calculate the weights of the GMV portfolio.
+
+```{r}
+#| include: false
+MSFT.w <- (SBUX.sigma^2 - cov.cov)/(MSFT.sigma^2 + SBUX.sigma^2 - 2*cov.cov)
+SBUX.w <- (1 - MSFT.w)
+```
+
+$$W_{MSFT} = \frac{\sigma_{SBUX}^2 - Cov}{\sigma_{MSFT}^2 + \sigma_{SBUX}^2 - 2(Cov)}$$$$W_{MSFT} = \frac{`r SBUX.sigma^2` - `r cov.cov`}{`r MSFT.sigma^2` + `r SBUX.sigma^2` - 2(`r cov.cov`)} = `r MSFT.w`$$$$W_{SBUX} = 1 - W_{MSFT} = 1 - `r MSFT.w` = `r SBUX.w`$$
+The weights for the GMV portfolio given by this equation are 40% MSFT
+and 60% SBUX, supporting the answer to part d.
+
+## Question 2
+
+a)  
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+library("quantmod")
+options("getSymbols.warning4.0"=FALSE)
+getSymbols(Symbols=c("NVDA", 'WAT', 'JPM', 'L'), from="2020-12-01", to="2025-12-31",
+           auto.assign=TRUE, warnings=FALSE)
+          
+NVDA <- NVDA$NVDA.Adjusted
+WAT <- WAT$WAT.Adjusted
+JPM <- JPM$JPM.Adjusted
+L <- L$L.Adjusted
+
+prices <- merge(NVDA, WAT, JPM, L)
+
+prices.M <- to.monthly(prices, OHLC=FALSE)
+colnames(prices.M) <- c("NVDA", "WAT", "JPM", "L")
+
+prices.M.ret <- prices.M / lag(prices.M, 1) - 1
+prices.M.ret <- na.omit(prices.M.ret)
+equity.curve.M <- cumprod(1 + prices.M.ret)
+
+# Plotting Execution
+plot.zoo(equity.curve.M, 
+         screens = 1,                 
+         col = 1:4,                   
+         xlab = "Date", 
+         ylab = "Cumulative Return", 
+         main = "Monthly Equity Curve")
+
+legend("topleft", 
+       legend = colnames(equity.curve.M), 
+       col = 1:4,                     
+       lty = 1,                       
+       cex = 0.8)
+```
+
+b)  
+
+```{r}
+#| echo: false
+#| results: asis
+# Monthly Log Returns
+NVDA.M.l.ret <- na.omit(diff(log(prices.M$NVDA)))
+WAT.M.l.ret  <- na.omit(diff(log(prices.M$WAT)))
+JPM.M.l.ret  <- na.omit(diff(log(prices.M$JPM)))
+L.M.l.ret    <- na.omit(diff(log(prices.M$L)))
+# Merge
+log.returns.all <- merge(NVDA.M.l.ret, WAT.M.l.ret, JPM.M.l.ret, L.M.l.ret)
+colnames(log.returns.all) <- c("NVDA", "WAT", "JPM", "L")
+# 2. Define the risk-free rate
+rf_annual <- 0.04
+rf_monthly_log <- log(1 + rf_annual) / 12
+# Compute Mean, Standard deviation and Sharpe Ratio
+mean_returns <- apply(log.returns.all, 2, mean)
+sd_returns <- apply(log.returns.all, 2, sd)
+sharpe_ratio <- (mean_returns - rf_monthly_log) / sd_returns
+stats_summary <- data.frame(
+  Mean = mean_returns,
+  StdDev = sd_returns,
+  SharpeRatio = sharpe_ratio
+)
+
+knitr::kable(stats_summary, caption = "Summary Statistics")
+```
+
+c)  
+
+```{r}
+#| echo: false
+
+# Compute covariance and correlation
+cov.mat <- cov(log.returns.all)
+cor.mat <- cor(log.returns.all)
+
+# Render the correlation matrix natively as a formatted table
+knitr::kable(cor.mat, digits = 4, caption = "4x4 Sample Correlation Matrix of Monthly Log Returns")
+```
+
+d)  Compute GMV weight
+    $$\mathbf{w} = \frac{\Sigma^{-1} \mathbf{1}}{\mathbf{1}^T \Sigma^{-1} \mathbf{1}}$$
+
+```{r}
+#| echo: false
+
+# 1. Computation
+ones <- rep(1, ncol(cov.mat))
+inv.cov.mat <- solve(cov.mat)
+w.gmv.portfolio <- (inv.cov.mat %*% ones) / as.numeric(t(ones) %*% inv.cov.mat %*% ones)
+
+# 2. Data Aggregation
+# Extracting the numeric values and mapping them to their respective asset names
+gmv_weights_df <- data.frame(
+  Asset = c("NVDA", "WAT", "JPM", "L"),
+  Weight = as.numeric(w.gmv.portfolio)
+)
+
+# 3. Table Rendering
+knitr::kable(gmv_weights_df, digits = 4, caption = "Optimal Weights for the GMV Portfolio")
+```
+
+e)  
+
+```{r}
+#| echo: false
+#| results: asis
+# Define the risk-free rate
+rf_annual <- 0.04
+rf_monthly_log <- log(1 + rf_annual) / 12
+# Compute Mean, Standard deviation and Sharpe Ratio
+asset_means <- apply(log.returns.all, 2, mean)
+port_mean_return <- as.numeric(t(w.gmv.portfolio) %*% asset_means)
+port_variance <- as.numeric(t(w.gmv.portfolio) %*% cov.mat %*% w.gmv.portfolio)
+port_sd <- sqrt(port_variance)
+
+port_sharpe_ratio <- (port_mean_return - rf_monthly_log) / port_sd
+stats_summary_port <- data.frame(
+  Portfolio_Mean = port_mean_return,
+  Portfolio_StdDev = port_sd,
+  Portfolio_Sharpe = port_sharpe_ratio
+)
+
+knitr::kable(stats_summary_port, caption = "Portfolio Summary Statistics")
+```
+
+f)  the 5% Value-at-Risk (VaR) for a one-month investment is calculated
+    using the sample mean ($\mu$) and standard deviation ($\sigma$) of
+    the monthly log returns, assuming a normal distribution. The 5%
+    quantile of returns is multiplied by the initial investment of
+    \$50,000:
+
+$$VaR_{5\%} = (\mu + \sigma \cdot Z_{0.05}) \times 50,000$$
+
+```{r}
+#| echo: false
+
+initial_investment <- 50000
+
+# NVDA
+NVDA.M.l.ret <- na.omit(NVDA.M.l.ret)
+NVDA.xbar <- mean(NVDA.M.l.ret)
+NVDA.sd <- sd(NVDA.M.l.ret)
+NVDA.q.5 <- NVDA.xbar + NVDA.sd * qnorm(0.05)  
+VaR.5.NVDA <- NVDA.q.5 * initial_investment
+
+# JPM
+JPM.M.l.ret <- na.omit(JPM.M.l.ret)
+JPM.xbar <- mean(JPM.M.l.ret)
+JPM.sd <- sd(JPM.M.l.ret)
+JPM.q.5 <- JPM.xbar + JPM.sd * qnorm(0.05)  
+VaR.5.JPM <- JPM.q.5 * initial_investment
+
+# WAT
+WAT.M.l.ret <- na.omit(WAT.M.l.ret)
+WAT.xbar <- mean(WAT.M.l.ret)
+WAT.sd <- sd(WAT.M.l.ret)
+WAT.q.5 <- WAT.xbar + WAT.sd * qnorm(0.05)  
+VaR.5.WAT <- WAT.q.5 * initial_investment
+
+# L
+L.M.l.ret <- na.omit(L.M.l.ret)
+L.xbar <- mean(L.M.l.ret)
+L.sd <- sd(L.M.l.ret)
+L.q.5 <- L.xbar + L.sd * qnorm(0.05)  
+VaR.5.L <- L.q.5 * initial_investment
+
+# GMV Portfolio
+GMVp.xbar <- port_mean_return
+GMVp.sd <- port_sd
+GMVp.q.5 <- GMVp.xbar + GMVp.sd * qnorm(0.05)  
+VaR.5.GMVp <- GMVp.q.5 * initial_investment
+
+# Data Aggregation
+var_results <- data.frame(
+  Asset = c("Nvidia (NVDA)", "JPMorgan Chase (JPM)", "Waters Corp (WAT)", "Loews Corp (L)", "GMV Portfolio"),
+  VaR_5_Percent = c(VaR.5.NVDA, VaR.5.JPM, VaR.5.WAT, VaR.5.L, VaR.5.GMVp)
+)
+
+# Table Rendering
+knitr::kable(var_results, 
+             digits = 2, 
+             format.args = list(big.mark = ","), 
+             caption = "5% Value-at-Risk (VaR) for a $50,000 One-Month Investment")
+```
+
+g)  
+
+The Capital Asset Pricing Model (CAPM) regression is estimated using the
+generic expression:
+
+$$R_{i,t} - R_{f,t} = \alpha_i + \beta_i(R_{m,t} - R_{f,t}) + \epsilon_{i,t}$$
+
+Where idiosyncratic risk is represented by the standard deviation of the
+residuals, $\sigma(\epsilon_i)$. The Fama-French market factors and
+asset returns are scaled as percentages
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+library(frenchdata)
+library(xts) 
+
+# 1. Data Retrieval and Formatting
+ff3 <- download_french_data("Fama/French 3 Factors")
+ff3_monthly_raw <- ff3$subsets$data[[1]]
+ff3_monthly_raw$date <- as.yearmon(as.character(ff3_monthly_raw$date), format = "%Y%m")
+
+ff3_xts <- xts(
+  ff3_monthly_raw[, c("Mkt-RF","SMB","HML","RF")],   
+  order.by = as.Date(ff3_monthly_raw$date)                 
+)
+colnames(ff3_xts) <- c("mkt_excess","smb","hml","rf")
+index(ff3_xts) <- as.yearmon(index(ff3_xts))  
+
+# Aligning period and scaling returns
+ff3.MRK <- ff3_xts["2021-01-01/2025-12-31"]
+lr.stock <- log.returns.all * 100
+
+# 2. CAPM Regressions
+capm.NVDA <- lm(lr.stock$NVDA - ff3.MRK$rf ~ ff3.MRK$mkt_excess)
+capm.WAT <- lm(lr.stock$WAT - ff3.MRK$rf ~ ff3.MRK$mkt_excess)
+capm.JPM <- lm(lr.stock$JPM - ff3.MRK$rf ~ ff3.MRK$mkt_excess)
+capm.L <- lm(lr.stock$L - ff3.MRK$rf ~ ff3.MRK$mkt_excess)
+
+# GMV Portfolio Regression
+w <- w.gmv.portfolio
+gmv.ret.xts <- lr.stock[, "NVDA"]*w[1] + lr.stock[, "WAT"]*w[2] + lr.stock[, "JPM"]*w[3] + lr.stock[, "L"]*w[4] 
+colnames(gmv.ret.xts) <- c("gmv_ret") 
+capm.GMV <- lm(gmv.ret.xts - ff3.MRK$rf ~ ff3.MRK$mkt_excess)
+
+# 3. Data Extraction and Aggregation
+extract_metrics <- function(model, asset_name) {
+  mod_summary <- summary(model)
+  data.frame(
+    Asset = asset_name,
+    Alpha = mod_summary$coefficients[1, 1],
+    SE_Alpha = mod_summary$coefficients[1, 2],
+    Beta = mod_summary$coefficients[2, 1],
+    SE_Beta = mod_summary$coefficients[2, 2],
+    Idiosyncratic_Risk = mod_summary$sigma,
+    R_Squared = mod_summary$r.squared
+  )
+}
+
+capm_results_df <- rbind(
+  extract_metrics(capm.NVDA, "NVDA"),
+  extract_metrics(capm.WAT, "WAT"),
+  extract_metrics(capm.JPM, "JPM"),
+  extract_metrics(capm.L, "L"),
+  extract_metrics(capm.GMV, "GMV Portfolio")
+)
+
+# 4. Table Rendering
+knitr::kable(capm_results_df, 
+             digits = 4, 
+             caption = "CAPM Regression Output: Alpha, Beta, Risk, and Fit Metrics")
+```
+
+h)  **Historical Trajectories & Cross-Asset Correlation** The monthly
+    equity curves shown in Part a plot the past return performance of
+    each asset. The mathematical foundation for combining these assets
+    is established in the correlation matrix (Part c). In a real-world
+    context, the degree to which these four specific stocks move
+    independently dictates our ability to reduce aggregate volatility
+    without sacrificing expected returns. For instance, the correlation
+    between NVDA and WAT is notably low (0.0939), providing significant
+    diversification utility within the portfolio.
+
+**Global Minimum Variance (GMV) and Downside Risk** Matrix optimization
+(Part d) isolates the lowest-risk allocation possible for this
+portfilio. The weightings are heavily skewed toward the least volatile
+asset (L):
+
+-   **NVDA:** 4.87%, **WAT:** 2.06%, **JPM:** 3.55%, **L:** 89.53%
+
+To quantify downside risk, the 5% Value-at-Risk (VaR) translates
+standard deviation into maximum expected 1-month dollar losses for a
+\$50,000 investment at a 95% confidence interval (Part f):
+
+| Asset                | 5% VaR (One-Month) |
+|:---------------------|:-------------------|
+| Nvidia (NVDA)        | -\$9,527.36        |
+| Waters Corp (WAT)    | -\$7,370.32        |
+| JPMorgan Chase (JPM) | -\$4,708.34        |
+| Loews Corp (L)       | -\$3,260.28        |
+| **GMV Portfolio**    | **-\$3,132.93**    |
+
+The results demonstrate the practical effect of optimization: the GMV
+portfolio restricts extreme downside dollar risk more effectively than
+holding any single asset individually, even the defensive Loews Corp.
+
+\*\* Asset Pricing and Systematic Risk Exposures \*\* The CAPM
+regressions isolate fundamental pricing metrics for each equity,
+defining how they relate to the broader market:
+
+-   **Beta (**$\beta$): Measures systematic risk. **NVDA** exhibits the
+    highest beta at **2.2919**, indicating aggressive sensitivity to
+    market swings. Conversely, **L** is the most defensive with a
+    $\beta$ of **0.5779**.\
+-   **Idiosyncratic Risk & Fit (**$R^2$): **L** displays the lowest
+    $R^2$ (**0.2783**). This low correlation to the market suggests its
+    price action is driven predominantly by company-specific events
+    (idiosyncratic risk) rather than macroeconomic trends.\
+-   **Alpha (**$\alpha$): Evaluating the standard errors against the
+    estimated alphas reveals that no asset or portfolio produced a
+    statistically significant alpha at the 5% level (e.g., NVDA
+    $t \approx 1.65$). This indicates that historical returns were
+    structurally consistent with the systemic market risk taken, with no
+    evidence of abnormal "beat-the-market" performance.
+
+**Conclusion** The underlying data confirms that while individual
+equities like NVDA provide high historical growth, they carry severe VaR
+parameters and extreme systematic market exposure. Implementing the
+weights of the GMV portfolio successfully counteracts these extremes,
+anchoring the allocation in defensive assets to result in a highly
+risk-adjusted profile that fundamentally minimizes capital drawdown.
+
+## Question 3
+
+a)  The Fama-French three factor (FF3F) regression model over the
+    following subperiods is as follows:
+
+```{r}
+#| include: false
+
+# 1. Data Retrieval and Preparation
+ind5 <- download_french_data("5 Industry Portfolios")
+id5.df <- ind5$subsets$data[[1]] 
+id5.df$date <- as.yearmon(as.character(id5.df$date), format = "%Y%m")
+
+id5.xts <- xts(
+  id5.df[, c("Cnsmr","Manuf","HiTec","Hlth","Other")],   
+  order.by = as.Date(id5.df$date)                  
+)
+index(id5.xts) <- as.yearmon(index(id5.xts))  
+
+id5.manuf <- id5.xts$Manuf 
+index(ff3_xts) <- as.yearmon(index(ff3_xts))  
+
+# 2. Period 1: January 1997 to December 2011
+id5.manuf.period1 <- id5.manuf["1997-01/2011-12"]
+ff3.p1 <- ff3_xts["1997-01/2011-12"]
+
+# FF3F Regression 1
+ff3.fit1 <- lm(id5.manuf.period1 - ff3.p1$rf ~ ff3.p1$mkt_excess + ff3.p1$smb + ff3.p1$hml)
+
+# 3. Period 2: January 2012 to December 2025
+id5.manuf.period2 <- id5.manuf["2012-01/2025-12"]
+ff3.p2 <- ff3_xts["2012-01/2025-12"]
+
+# FF3F Regression 2
+ff3.fit2 <- lm(id5.manuf.period2 - ff3.p2$rf ~ ff3.p2$mkt_excess + ff3.p2$smb + ff3.p2$hml)
+```
+
+January 1997 to December 2011
+
+The fitted Fama-French three-factor regression for the first subperiod
+is reported below:
+
+```{r}
+#| echo: false
+# Extract coefficients and rename rows for clarity
+coef_p1 <- summary(ff3.fit1)$coefficients
+rownames(coef_p1) <- c("Intercept (Alpha)", "Mkt-RF (Beta)", "SMB", "HML")
+
+knitr::kable(coef_p1, 
+             digits = 4, 
+             caption = "FF3F Regression Coefficients: Jan 1997 - Dec 2011")
+```
+
+January 2012 to December 2025
+
+The fitted Fama-French three-factor regression for the second subperiod
+is reported below:
+
+```{r}
+#| echo: false
+# Extract coefficients and rename rows for clarity
+coef_p2 <- summary(ff3.fit2)$coefficients
+rownames(coef_p2) <- c("Intercept (Alpha)", "Mkt-RF (Beta)", "SMB", "HML")
+
+knitr::kable(coef_p2, 
+             digits = 4, 
+             caption = "FF3F Regression Coefficients: Jan 2012 - Dec 2025")
+```
+
+b)  From the results of the regression, Period 1 defines
+    $\beta_1 = 0.85056$, that is to say 1% increase in the market's
+    excess return, the Manufacturing portfolio's excess return increases
+    by 0.85056%. For period 2 this is 0.928025%, indicating during
+    period 2, the manuf portfolio is more more sensitive to market
+    movements in Period 2.
+
+To test weather this portfolio tracks the market at a 5% significance
+level through the hypothesis test,
+
+$H_0: \beta_1 = 1$ $H_1: \beta_1 \neq 1$
+
+Sub-Periods 1 and 2, denoted by $t_1$ and $t_2$ respectively;
+
+$$t_1 = \frac{0.85056 - 1}{0.03863} = -3.868, \quad t_2 = \frac{0.928025 - 1}{0.030734} = -2.342$$
+
+The degrees of freedom are 176 and 164 respectively so The Critical
+value for $t_1$ is $\pm 1.9735$ and $t_2$ is $\pm 1.9745$
+
+Therefore for both sub periods 1 and 2 since $|t| > t_{Critical}$ we
+reject the null, and conclude at a 5% significance level we the beta IS
+statistically different from 1, therefore the Manufacturing portfolio
+does not perfectly track the market from Jan 1997 to Dec 2011, nor from
+Jan 2012 to Dec 2025
+
+c)  
+
+```{r}
+#| echo: false
+# Restricted Regression Period 1&2:
+capm_restricted.fit1 <- lm(id5.manuf.period1-ff3.p1$rf ~ ff3.p1$mkt_excess)
+knitr::kable(summary(capm_restricted.fit1)$coefficients, digits = 4, caption = "CAPM Regression Coefficients: Jan 1997 - Dec 2011")
+
+capm_restricted.fit2 <- lm(id5.manuf.period2-ff3.p2$rf ~ ff3.p2$mkt_excess)
+knitr::kable(summary(capm_restricted.fit2)$coefficients, digits = 4, caption = "CAPM Regression Coefficients: Jan 2012 - Dec 2025")
+```
+
+**Period 1 Test:**
+
+To test for the validity of the CAPM over the FF3F model using the
+J-test at a 5% significance level:
+
+$$H_0 : \beta_{SMB} = \beta_{HML} = 0$$
+$$H_1 : \text{at least one is non-zero}$$
+
+Under CAPM: $$2.659 = \sqrt{\frac{RSS_0}{178}}$$ $$RSS_0 = 1258.51$$
+
+and under French Fama 3 factor: $$2.465 = \sqrt{\frac{RSS_1}{176}}$$
+$$RSS_1 = 1069.4156$$
+
+Hence J-Test: $$J = \frac{RSS_0 - RSS_1}{RSS_1 / (T-K-1)}$$
+$$J = \frac{1258.51 - 1069.4156}{1069.4156 / 176}$$ $$J = 31.120$$
+
+**Period 2 Test:**
+
+To test for the validity of the CAPM over the FF3F model using the
+J-test at a 5% significance level:
+
+$$H_0 : \beta_{SMB} = \beta_{HML} = 0$$
+$$H_1 : \text{at least one is non-zero}$$
+
+Under CAPM: $$2.152 = \sqrt{\frac{RSS_0}{166}}$$ $$RSS_0 = 768.7633$$
+
+and under French Fama 3 factor: $$1.579 = \sqrt{\frac{RSS_1}{164}}$$
+$$RSS_1 = 408.8915$$
+
+Hence J-Test: $$J = \frac{RSS_0 - RSS_1}{RSS_1 / (T-K-1)}$$
+$$J = \frac{768.7633 - 408.8915}{408.8915 / 164}$$ $$J = 144.339$$
+
+At a 5% level of significance, the critical value for a Chi-squared
+distribution with 2 degrees of freedom is 5.991. The computed J-Test
+statistics for period 1 is 31.120 and for Period 2, 144.339. Both are
+greater than the Critical value therefore we reject the null hypothesis
+($H_0: \beta_{SMB} = \beta_{HML} = 0$) in both sub periods. That is we
+have sufficient evidence to suggest that the Fama-French 3-Factor does
+not reduce to CAPM during either the 1997–2011 and 2011-2025 sub
+periods.
+
+d)  
+
+The client’s claim is fundamentally flawed due to two primary
+analytically errors: ignoring statistical significance and relying on a
+miss specified model.
+
+Whilst the Client correctly points out the CAPM intercept, or alpha for
+the 1997-2011 is positive, (0.34895), the validity of this fails when
+evaluated using a t-test to show if this value is statistically
+significant compared to 0. At a 5% significance level, the p-value of
+0.0808 \> 0.05, therefore we would fail to reject the null hypothesis
+that alpha is 0, (H0: a=0). The observed deviation from zero is within
+the expected range of random noise, meaning there is no evidence of true
+excess returns over the market risk taken from the portfolio.
+
+Additionally the client bases their buy signal from the alpha derived
+from a purely CAPM model. However From the tests conducted earlier, for
+the 1997-2011 sub period, we definitely rejected the null hypothesis
+that the Fama-French 3-Factor (FF3F) model reduces to the CAPM. (see
+Section 3 part C)
+
+This proves CAPM regression calculated is is an inadequate formulation.
+If we evaluate the portfolio's performance however using the FF3F model
+for period 1, alpha = 0.27445, with a p-value of 0.141. Since this
+p-value is again greater than 0.05 we cannot conclude the portfolio
+generated statistically significant abnormal returns.
+
+**Recommendation:** Do not buy based on the positive estimated
+alpha-risk.
+
+The decision to initiate a buy cannot be statistically support at a 5%
+significance level from the regression models of CAPM or FF3F results,
+however this does not indicate whether the trade is good or bad, as it
+cannot be proved or disproved if buying will produce significant alpha
+over excess market returns.
+
+\newpage
+
+## Appendix: R Code
+
+```{r}
+#| ref.label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+```

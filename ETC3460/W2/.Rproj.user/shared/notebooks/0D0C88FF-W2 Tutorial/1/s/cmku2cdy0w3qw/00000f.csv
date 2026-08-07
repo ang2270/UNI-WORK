@@ -1,0 +1,3 @@
+"0","# log return for Close"
+"0","logret <- diff(log(nasdaq.xts$Close))  # base R"
+"0","logret <- na.omit(logret)   # removes the first NA created by diff()"

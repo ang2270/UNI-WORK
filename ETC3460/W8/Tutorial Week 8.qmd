@@ -1,0 +1,612 @@
+---
+title: "Week 8 Tutorial"
+format: 
+       pdf:
+        papersize: A4
+editor: visual
+execute: 
+  message: false
+  warning: false
+  echo: false
+---
+
+\definecolor{awesome}{rgb}{1.0,0.13,0.32}
+\definecolor{bondiblue}{rgb}{0.0,0.58,0.71}
+
+### Introduction
+
+This workshop will help you familiarize yourself with: non-stationary time-series; the Augmented Dickey Fuller test and; forecasting autoregressive models in R.
+
+***NOTE:*** \textcolor{blue}{We have used echo = FALSE in some code chunks so that they do not all render in the handout, but they are included in the .qmd file. This is a similar approach you should use in the assignment - you do not need to provide any R code.}
+
+\textcolor{blue}{We also use the \textbf{here} package so that we can call the Correlogram function globally. If you are not using a file structure in your Project, you do not need this. If you need help with this, ask in a consultation - do not worry about it today.}
+
+\bigskip
+
+## Question 1
+
+Consider an AR(1) process given by $$y_{t}=\phi _{1}y_{t-1}+\varepsilon _{t},$$ where $\varepsilon _{t}\sim _{iid}WN\left( 0,\sigma _{\varepsilon}^{2}\right)$ (white noise).
+
+Recall from the Week 7 tutorial, in order for this process to be stationary we require that condition $\left\vert \phi _{1}\right\vert <1$ be met. Even when $\left\vert \phi _{1}\right\vert <1$, the absolute value of $\phi _{1}$ determines the \`persistence' of the process.
+
+We will use the \textcolor{blue}{Week8.xlsx} file from Moodle. The variable ***y1t*** is an AR(1) process with $\phi=0.8$. We have 499 observations (we lose one to create the lag variable).
+
+Read in the data:
+
+```{r}
+library(readxl)
+library(xts)
+
+data.df <- read_excel("Week8.xlsx")
+
+# create a random time index first because xts needs an index. 
+random_date <- as.Date("2000-01-01") + 0:(nrow(data.df) - 1)
+data.xts <- xts(data.df, order.by = random_date)
+
+y1 <- data.xts$Y1T
+plot(y1)
+```
+
+Use data up to point 449 to train/fit the model, and then predict ***y1t*** up to the end of the sample (*i.e.* estimation sample: 1 449; forecast sample: 450-499). Remember, we have the observed values for the last 50 observations, so we will be able to compare our forecasts we generate to the actual values.
+
+```{r}
+H <- 50
+# y1 <- y1[-1] # remove the first observation as it contains zero.
+n <- NROW(y1)
+
+train_xts <- y1[1:(n - H)]
+test_xts  <- y1[(n - H + 1):n]
+```
+
+Now estimate the AR(1) model over the training data set. To do this in R, we use the arima function.
+
+```{r}
+#========================
+# AR(1)
+#========================
+fit_ar1 <- arima(as.numeric(train_xts), order = c(1, 0, 0), 
+                 include.mean = TRUE)
+fit_ar1
+```
+
+The estimated AR(1) model in R is written as mean form $$
+y_{t}-\mu =\phi _{1}\left( y_{t-1}-\mu \right) +\varepsilon _{t} 
+$$ and so $$
+y_{t}+0.0426=0.7848\left( y_{t-1}+0.0426\right) +\hat{\varepsilon}_{t} 
+$$ This is just a de-meaned version of the AR(1) specification we did last week.
+
+\bigskip
+
+Now we want to use this estimated model to forecast over the test data.
+
+```{r}
+pred_ar1 <- predict(fit_ar1, n.ahead = H)
+
+fc_ar1 <- xts(pred_ar1$pred, order.by = index(test_xts))
+colnames(fc_ar1) <- "Forecast"
+```
+
+Since we have the actual observations, we can calculate some error statistics for our forecasts.
+
+```{r}
+compare_ar1 <- merge(test_xts, fc_ar1)
+colnames(compare_ar1) <- c("Actual", "Forecast")
+head(compare_ar1)
+
+err_ar1 <- compare_ar1$Actual - compare_ar1$Forecast
+abs_err_ar1 <- abs(err_ar1)
+sq_err_ar1  <- err_ar1^2
+
+MAE_ar1  <- mean(as.numeric(abs_err_ar1), na.rm = TRUE)
+MSE_ar1  <- mean(as.numeric(sq_err_ar1),  na.rm = TRUE)
+RMSE_ar1 <- sqrt(MSE_ar1)
+
+
+results_ar1 <- data.frame(
+  MAE_ar1  = MAE_ar1,
+  MSE_ar1  = MSE_ar1,
+  RMSE_ar1 = RMSE_ar1
+)
+
+results_ar1
+
+```
+
+These error statistics do not really tell us anything until we have another model to compare them to.
+
+We can plot the Actual vs Forecasts, with a 95% CI. The code for the plot is (the Monash University enterprise version of Gemini (https://gemini.google.com/app) was used to generate the code for the plot):
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(zoo)
+
+# 1. Create a data frame for the Test period only
+# We combine the actual test values and the forecast results
+plot_test_data <- data.frame(
+  Index = index(test_xts),
+  Actual = as.numeric(test_xts),
+  Forecast = as.numeric(pred_ar1$pred),
+  Lower = as.numeric(pred_ar1$pred - 1.96 * pred_ar1$se),
+  Upper = as.numeric(pred_ar1$pred + 1.96 * pred_ar1$se)
+)
+
+# 2. Generate the plot
+ggplot(plot_test_data, aes(x = Index)) +
+  # Add the 95% Confidence Interval ribbon
+  geom_ribbon(aes(ymin = Lower, ymax = Upper), fill = "steelblue", 
+              alpha = 0.2) +
+  # Add the Actual values line
+  geom_line(aes(y = Actual, color = "Actual"), linewidth = 1) +
+  # Add the Forecasted values line
+  geom_line(aes(y = Forecast, color = "Forecast"), linewidth = 1, 
+            linetype = "dashed") +
+  # Refine scales and labels
+  scale_color_manual(values = c("Actual" = "black", "Forecast" = "red")) +
+  labs(
+    title = "Test Data: Actual vs. Forecast",
+    subtitle = paste("ARIMA(1,0,0) Model - Horizon H =", H),
+    x = "Time",
+    y = "Value",
+    color = "Legend",
+    caption = "Shaded area represents the 95% Confidence Interval"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+We can see from the forecast that there is a bit of movement in the beginning of the forecast, but it levels off to the mean the further we get away from the training data. The 95% confidence interval starts out narrow and becomes quite wide the further out we forecast. These results are not surprising (refer to the derivations at the end of the document).
+
+The confidence interval captures most of the actual observations, except for a low dip just after April 15.
+
+Now we will repeat the above by estimating an AR(2) model (we could of course have done everything all at once, but it is better to walk through one example in the first instance). We need to decide which model performs best, so we will compare the accuracy of the forecasts (use RMSE, MAE and MAPE). Is the result surprising?
+
+The estimated AR(2) output is:
+
+```{r}
+#========================
+# AR(2)
+#========================
+fit_ar2 <- arima(as.numeric(train_xts), order = c(2, 0, 0), include.mean = TRUE)
+fit_ar2
+pred_ar2 <- predict(fit_ar2, n.ahead = H)
+
+fc_ar2 <- xts(pred_ar2$pred, order.by = index(test_xts))
+colnames(fc_ar2) <- "Forecast"
+
+compare_ar2 <- merge(test_xts, fc_ar2)
+colnames(compare_ar2) <- c("Actual", "Forecast")
+# head(compare_ar2)
+
+err_ar2 <- compare_ar2$Actual - compare_ar2$Forecast
+abs_err_ar2 <- abs(err_ar2)
+sq_err_ar2  <- err_ar2^2
+
+MAE_ar2  <- mean(as.numeric(abs_err_ar2), na.rm = TRUE)
+MSE_ar2  <- mean(as.numeric(sq_err_ar2),  na.rm = TRUE)
+RMSE_ar2 <- sqrt(MSE_ar2)
+
+```
+
+As with the AR(1) model above, the estimated AR(2) model in R is written as mean form $$
+y_{t}-\mu =\phi _{1}\left( y_{t-1}-\mu \right) +\phi _{2}\left( y_{t-2}-\mu
+\right) +\varepsilon _{t} 
+$$ and so $$
+y_{t}+0.0433=0.7986\left( y_{t-1}+0.0433\right) -0.0175\left(
+y_{t-2}+0.0433\right) +\hat{\varepsilon}_{t} 
+$$
+
+\textcolor{bondiblue}{Now that we have two models, we can compare the forecast errors to help select the model that predicts the test data the best.}
+
+```{r}
+#========================
+# Compare
+#========================
+acc_compare <- rbind(
+  AR1 = c(MAE = MAE_ar1, RMSE = RMSE_ar1),
+  AR2 = c(MAE = MAE_ar2, RMSE = RMSE_ar2)
+)
+
+print(acc_compare)
+```
+
+#### Answer below
+
+## Question 2
+
+When $\phi _{1}\geq 1$, then $y_{t}$ in the AR(1) model is said to be a non-stationary or explosive time series process. To illustrate this point, in the \textcolor{blue}{Week8.xlsx} file, \textcolor{bondiblue}{\textbf{y2t}} has $\phi=1$ (*i.e.* it has a unit root) and \textcolor{bondiblue}{\textbf{y3t}} has $\phi=1.2$ (*i.e.* it is an explosive series).
+
+1.  Produce the correlograms for both of the time series. Briefly discuss.
+
+```{r}
+# Use the here package to call the file globally
+
+source(here::here("Correlogram.R"))
+
+# Otherwise, comment out the line above and use this:
+# source("Correlogram.R")
+
+# Y2T
+correlogram(data.xts$Y2T, max.lag = 20)
+# Y3T
+correlogram(data.xts$Y3T, max.lag = 20)
+
+# Optional - put both correlograms in one plot
+
+# par(mfrow = c(1,2)) # graphics to draw 1 row and 2 columns of plots
+# correlogram(data.xts$Y2T, max.lag = 20, main.acf  = "Correlogram of Y2T")
+# correlogram(data.xts$Y3T, max.lag = 20, main.acf  = "Correlogram of Y3T")
+```
+
+#### Answer below
+
+```{r}
+# plot of Y3T
+par(mfrow = c(1,1))
+plot(data.xts$Y3T)
+```
+
+#### Answer below
+
+2.  In the case when $\phi_{1}=1.0$ (*i.e.* for \textcolor{bondiblue}{\textbf{y3t}}), conduct an Augmented Dickey Fuller test to formally establish whether the time series contains a unit root.
+
+\textcolor{bondiblue}{We know that we have a unit root in the series because it was created that way. In practice, we would suspect a unit root because of the pattern in the correlogram. Essentially what we want to do is to do a t-test to see if $\phi=1$ or not, using the ADF. We will be using the R package \textbf{urca} to do this (so you need to install this package before you start), and it is important that you know the form of the ADF that the package uses, as this will determine the steps that you need to write down when performing the test. We have provided a short guide in the code, but you can also use the help function in R.}
+
+\textcolor{bondiblue}{It is also important to remember that while R does give us a calculated test statistic, the critical values for this test statistic have been tabulated using simulations. So we will have to compare the calculated test statistic to the ones provided in the output. We have no p-value for this test.}
+
+\textcolor{bondiblue}{First you need to decide if you use an intercept, or an intercept with trend in the ADF test. If there is a trend in the series, use "trend" as an option. Otherwise use "drift" (we will never use "none").}
+
+```{r}
+# plot of Y2T
+par(mfrow = c(1,1))
+plot(data.xts$Y2T) # shows that Y2T contains a trend term
+```
+
+\textcolor{bondiblue}{We need to look at the line plot of the \textbf{y2t} series to determine if we should use a trend term or not. There is a trend in the series, so we should use the trend option in the test.}
+
+```{r}
+library(urca)
+
+####################################
+#  R (`ur.df`) argument |
+#  -------------------- 
+#  `type = "none"`      |
+#  `type = "drift"`     |
+#  `type = "trend"`     |
+#  -------------------- |
+#  `selectlags = "AIC"` |
+#  `selectlags = "BIC"` |
+#-------------------------
+
+
+# trend
+# maximum lag = 17
+adf_level_BIC <- ur.df(data.xts$Y2T, type = "trend", selectlags = "BIC", lags = 17)
+summary(adf_level_BIC)
+
+```
+
+\textcolor{bondiblue}{The ADF test is given by the t-value for the coefficient z.lag.1, which is -2.408. We compare this to the critical value for tau3. The rejection region is the left tail, so we fail to reject at the all levels of significance since the ADF test = -2.408 is greater than all of the provided tau3 values. We do have a unit root in the series.}
+
+\textcolor{bondiblue}{This is of course not a proper answer, we need to write down the type of random walk, equations that will be used, define variables in these equations, the null and alternative hypothesis and the form of the test statistic. Remember, R uses the \textbf{differenced version} of the ADF, and we will let R determine the value of $p$, the length of the differenced lag structure. So a thorough answer would be something like:}
+
+\textcolor{bondiblue}{Since the data has an obvious trend, the random walk model is defined by: $y_t= c_t + \phi_1 y_{t-1}+\epsilon_t$, where $c_t = \omega_0 + \omega_1 t$.}
+
+\textcolor{bondiblue}{Using the regression: $\Delta y_t=c_t+\phi_{c1} y_{t-1}+\sum_{i=1}^{p-1}\beta_i \Delta y_{t-i}+\epsilon_t$.}
+
+\textcolor{bondiblue}{We wish to test $H_0:\phi_{c1}=0$ against $H_1:\phi_{c1}<0$, where $\phi_{c1}=\phi_1-1$.}
+
+\textcolor{bondiblue}{The test-statistic is given by $ADF=\hat{\phi}_{c1}/s.e.(\hat{\phi}_{c1})$.}
+
+\textcolor{bondiblue}{We reject $H_0$ if the ADF test < tau. At the 5\% level of significance, tau = -3.42. Since -2.408 is not less than -3.42, we fail to reject the null. There is insufficient evidence to support the hypothesis that $\phi_{c1}<0$. We can therefore conclude that the series does have a unit root (\textit{i.e.} the y2t series is not stationary).}
+
+\textcolor{blue}{\textit{NOTE: If $\phi_{c1}=0$, this means that $\phi_1-1 = 0$ which means that $\phi_1 = 1$ or we have a unit root.}}
+
+3.  Create a new variable \textcolor{bondiblue}{\textbf{dy2t =y2{t}-y2{t-1}}}. Repeat the Augmented Dickey Fuller test to check whether this new time series contains a unit root.
+
+\textcolor{bondiblue}{To remove a unit root (\textit{i.e.} make it stationary), we can difference the variable. So we would expect that the differenced series would not have a unit root, and we would reject the null using the ADF test. We still need to look at the line graph to determine if we include a trend or not.}
+
+```{r}
+# first difference
+dY2T <- na.omit(diff(data.xts$Y2T))  # vector not data.frame
+plot(dY2T)
+```
+
+\textcolor{bondiblue}{Since the data has no obvious trend, the random walk model is defined by: $y_t= c_t + \phi_1 y_{t-1}+\epsilon_t$, where $c_t = \omega_0$. We would select type = "drift" in our ADF test.}
+
+```{r}
+adf_level_BIC <- ur.df(dY2T, type = "drift", selectlags = "BIC", lags = 17)
+summary(adf_level_BIC)
+```
+
+#### Answer below
+
+\newpage
+
+## AR(1) and AR(2) Forecast derivations
+
+### AR(1) Forecast Derivation
+
+Suppose the fitted AR(1) model is written in mean form as
+
+$$
+Y_t - \mu = \phi (Y_{t-1} - \mu) + \varepsilon_t,
+$$
+
+where
+
+$$
+\phi = 0.7848, \qquad \mu = -0.0426.
+$$
+
+The last observed value is
+
+$$
+Y_T = 2.09081693.
+$$
+
+Hence the fitted model is
+
+$$
+Y_t - (-0.0426) = 0.7848\bigl(Y_{t-1} - (-0.0426)\bigr) + \varepsilon_t,
+$$
+
+or equivalently,
+
+$$
+Y_t + 0.0426 = 0.7848\,(Y_{t-1} + 0.0426) + \varepsilon_t.
+$$
+
+#### 1-step ahead forecast
+
+The 1-step ahead forecast is
+
+$$
+\hat Y_{T+1\mid T} = \mu + \phi (Y_T - \mu).
+$$
+
+Substituting the values,
+
+$$
+\hat Y_{T+1\mid T}
+= -0.0426 + 0.7848\bigl(2.09081693 - (-0.0426)\bigr)
+$$
+
+$$
+= -0.0426 + 0.7848(2.13341693)
+$$
+
+$$
+\hat Y_{T+1\mid T} \approx 1.63170561.
+$$
+
+#### 2-step ahead forecast
+
+For an AR(1) model, replace the unknown future value by its forecast:
+
+$$
+\hat Y_{T+2\mid T} = \mu + \phi (\hat Y_{T+1\mid T} - \mu).
+$$
+
+So,
+
+$$
+\hat Y_{T+2\mid T}
+= -0.0426 + 0.7848\bigl(1.63170561 - (-0.0426)\bigr)
+$$
+
+$$
+= -0.0426 + 0.7848(1.67430561)
+$$
+
+$$
+\hat Y_{T+2\mid T} \approx 1.27139504.
+$$
+
+#### 3-step ahead forecast
+
+Similarly,
+
+$$
+\hat Y_{T+3\mid T} = \mu + \phi (\hat Y_{T+2\mid T} - \mu).
+$$
+
+Thus,
+
+$$
+\hat Y_{T+3\mid T}
+= -0.0426 + 0.7848\bigl(1.27139504 - (-0.0426)\bigr)
+$$
+
+$$
+= -0.0426 + 0.7848(1.31399504)
+$$
+
+$$
+\hat Y_{T+3\mid T} \approx 0.98862331.
+$$
+
+#### General formula
+
+More generally, for an AR(1) model,
+
+$$
+\hat Y_{T+h\mid T} = \mu + \phi^h (Y_T - \mu).
+$$
+
+Hence, in this case,
+
+$$
+\hat Y_{T+h\mid T} = -0.0426 + (0.7848)^h\bigl(2.09081693 - (-0.0426)\bigr).
+$$
+
+### Final answers for AR(1)
+
+$$
+\hat Y_{T+1\mid T} \approx 1.6317,
+$$
+
+$$
+\hat Y_{T+2\mid T} \approx 1.2714,
+$$
+
+$$
+\hat Y_{T+3\mid T} \approx 0.9886.
+$$
+
+### AR(2) Forecast Derivation
+
+Suppose the fitted AR(2) model is written in mean form as
+
+$$
+Y_t - \mu = \phi_1 (Y_{t-1} - \mu) + \phi_2 (Y_{t-2} - \mu) + \varepsilon_t,
+$$
+
+where
+
+$$
+\phi_1 = 0.7986, \qquad \phi_2 = -0.0175, \qquad \mu = -0.0433.
+$$
+
+The last two observed values are
+
+$$
+Y_T = 2.09081693, \qquad Y_{T-1} = 0.20989475.
+$$
+
+Hence the fitted model is
+
+$$
+Y_t - (-0.0433)
+= 0.7986\bigl(Y_{t-1} - (-0.0433)\bigr)
+- 0.0175\bigl(Y_{t-2} - (-0.0433)\bigr)
++ \varepsilon_t,
+$$
+
+or equivalently,
+
+$$
+Y_t + 0.0433
+= 0.7986\,(Y_{t-1} + 0.0433)
+- 0.0175\,(Y_{t-2} + 0.0433)
++ \varepsilon_t.
+$$
+
+#### 1-step ahead forecast
+
+The 1-step ahead forecast is
+
+$$
+\hat Y_{T+1\mid T}
+=
+\mu + \phi_1 (Y_T - \mu) + \phi_2 (Y_{T-1} - \mu).
+$$
+
+Substituting the values,
+
+$$
+\hat Y_{T+1\mid T}
+=
+-0.0433
++
+0.7986\bigl(2.09081693 - (-0.0433)\bigr)
+-
+0.0175\bigl(0.20989475 - (-0.0433)\bigr)
+$$
+
+$$
+=
+-0.0433 + 0.7986(2.13411693) - 0.0175(0.25319475)
+$$
+
+$$
+\hat Y_{T+1\mid T} \approx 1.65657487.
+$$
+
+#### 2-step ahead forecast
+
+For an AR(2) model, replace the unknown future value by its forecast:
+
+$$
+\hat Y_{T+2\mid T}
+=
+\mu + \phi_1 (\hat Y_{T+1\mid T} - \mu) + \phi_2 (Y_T - \mu).
+$$
+
+So,
+
+$$
+\hat Y_{T+2\mid T}
+=
+-0.0433
++
+0.7986\bigl(1.65657487 - (-0.0433)\bigr)
+-
+0.0175\bigl(2.09081693 - (-0.0433)\bigr)
+$$
+
+$$
+=
+-0.0433 + 0.7986(1.69987487) - 0.0175(2.13411693)
+$$
+
+$$
+\hat Y_{T+2\mid T} \approx 1.27687303.
+$$
+
+#### 3-step ahead forecast
+
+Similarly,
+
+$$
+\hat Y_{T+3\mid T}
+=
+\mu + \phi_1 (\hat Y_{T+2\mid T} - \mu) + \phi_2 (\hat Y_{T+1\mid T} - \mu).
+$$
+
+Thus,
+
+$$
+\hat Y_{T+3\mid T}
+=
+-0.0433
++
+0.7986\bigl(1.27687303 - (-0.0433)\bigr)
+-
+0.0175\bigl(1.65657487 - (-0.0433)\bigr)
+$$
+
+$$
+=
+-0.0433 + 0.7986(1.32017303) - 0.0175(1.69987487)
+$$
+
+$$
+\hat Y_{T+3\mid T} \approx 0.98124237.
+$$
+
+#### General recursion
+
+More generally, for an AR(2) model, the forecasts are obtained recursively as
+
+$$
+\hat Y_{T+h\mid T}
+=
+\mu + \phi_1 (\hat Y_{T+h-1\mid T} - \mu)
++ \phi_2 (\hat Y_{T+h-2\mid T} - \mu),
+\qquad h \ge 2.
+$$
+
+#### Final answers for AR(2)
+
+$$
+\hat Y_{T+1\mid T} \approx 1.6566,
+$$
+
+$$
+\hat Y_{T+2\mid T} \approx 1.2769,
+$$
+
+$$
+\hat Y_{T+3\mid T} \approx 0.9812.
+$$

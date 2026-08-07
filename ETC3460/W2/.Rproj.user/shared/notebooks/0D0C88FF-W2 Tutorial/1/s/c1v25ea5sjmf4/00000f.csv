@@ -1,0 +1,4 @@
+"0","hist(logret,"
+"0","     breaks = 30,"
+"0","     main = ""Histogram"","
+"0","     xlab = ""Log returns for Nasdaq close price"") "

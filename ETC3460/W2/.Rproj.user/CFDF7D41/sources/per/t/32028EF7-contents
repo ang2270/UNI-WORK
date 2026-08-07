@@ -1,0 +1,248 @@
+---
+title: "A2"
+format: html
+---
+
+library(xts)
+library(quantmod)
+options("getSymbols.warning4.0"=FALSE)
+getSymbols(Symbols = c("GOOG"), from="2016-02-05", to="2026-03-27",
+auto.assign=TRUE, warnings=FALSE)
+
+
+# convert to daily
+GOOG_D_P = to.daily(GOOG$GOOG.Adjusted, OHLC=FALSE) 
+
+# log return
+lr = na.omit(diff(log(GOOG_D_P)))
+
+# In percentages
+lr = lr * 100
+colnames(lr) <- c("GOOG_Daily_returns_%")
+head(lr)  
+tail(lr)
+
+signf = 0.05
+
+# Q1 
+# a)  Report the autocorrelations through lag 10 for the squared log returns. What do these
+#     autocorrelations tell you about the time-series properties of GOOG returns?
+The results tell us that there is quite weak auto correlation of returns, with levels around 0.1 - 0.15, it cannot be said there is insignificant correlation with yesterdays return and today's return but it is not close to 1. As well due to the relatively slow decay in values it appears to be none stationary
+
+```{r, eval = FALSE}
+# correlogram of residuals
+
+source("Correlogram.R")
+
+correlogram(lr^2, max.lag = 10)
+```
+# b) Using the log-return series, estimate both an AR(1) and an AR(2) specification for
+#   the returns. Compare the two Ötted models and choose the specification that you
+#   consider more appropriate. In your answer, brifly explain the evidence supporting
+#   your choice.
+
+fit_ar1 <- arima(as.numeric(lr), order = c(1, 0, 0), include.mean = TRUE)
+fit_ar1
+fit_ar2 <- arima(as.numeric(lr), order = c(2, 0, 0),include.mean = TRUE)
+fit_ar2
+
+aic_table <- data.frame(
+  Model = c("AR(1)", "AR(2)"),
+  AIC = c(
+    fit_ar1$aic,
+    fit_ar2$aic
+  )
+)
+
+aic_table
+
+In ar(1) model we get a value of -0.0581 for phi1 and an aic = 10220.32
+In the ar(2) model we get phi1 = -0.0580, phi2 = 0.0026, aic = 10222.30 
+therefore I conclude whilst both models are extremely close in AIC values, ar(1) is ~ 2 less and therefore it is
+more advantageous to choose Ar(1) as its estimator of prediction error is lower than ar(2).
+
+# c) For your chosen model in part b, conduct an ARCH test with p = 5 lags. What
+#    conclusion do you draw?
+
+LM Test for 5’th order ARCH effects
+**LM Test for $5$-th order ARCH effects**
+
+This is a test for ARCH in levels (conducted at a 5% significance level)
+
+**Hypotheses:**
+$$H_0: \text{cov}(\epsilon^2_t, \epsilon^2_{t-j}) = 0, \text{ for } j \neq 0$$
+$$H_1: \text{at least one } \text{cov}(\epsilon^2_t, \epsilon^2_{t-j}) \neq 0$$
+
+**Auxiliary Regression with $p = 5$:**
+$$\hat{\epsilon}^2_t = \gamma_0 + \gamma_1 \hat{\epsilon}^2_{t-1} + \gamma_2 \hat{\epsilon}^2_{t-2} + \gamma_3 \hat{\epsilon}^2_{t-3} + \gamma_4 \hat{\epsilon}^2_{t-4} + \gamma_5 \hat{\epsilon}^2_{t-5} + v_t$$
+**Tested Hypothesis:**
+$$H_0: \gamma_i = 0, \text{ for all } i = 1, 2,3,4,5 \, $$
+$$H_1: \text{at least one } \gamma_i \neq 0, \text{ for } i = 1,2,3,4,5 \, $$
+
+**Test Statistic:**
+$$W = nR^2$$
+where $n$ is the sample size and $R^2$ is the R-squared of the auxiliary regression.
+
+**Distribution under the Null:**
+$W$ has a $\chi^2_p$ distribution if $H_0$ is true.
+# Residuals:
+res_d <- residuals(fit_ar1)
+# Test:
+
+FinTS::ArchTest(res_d, lags = 5)
+
+The test yeilded a W = 133.56, with 5 degrees of freedom and a p-value < 2.2*10^16
+with a p-value < 0.05, we reject the null. this suggests that there is strong statistical evidence that the series has presence of conditional heteroskedasticity (ARCH effects) up to order 5 in the residuals of the AR(1) model.
+
+# d) Add an ARCH(3) component to your chosen mean equation from part b and reestimate the model (use a normal error distribution).
+#    Comment on the coefficient estimates in the variance equation
+
+library(rugarch)
+spec_ar1_arch3 <- ugarchspec(
+variance.model = list(
+model = "sGARCH",       # standard GARCH
+garchOrder = c(3, 0)    # ARCH(3)
+),
+mean.model = list(
+armaOrder = c(1, 0), 
+include.mean = TRUE
+),
+distribution.model = "norm" 
+)
+
+# model result
+fit_arma1_arch3d <- ugarchfit(
+spec = spec_ar1_arch3,
+data = lr
+)
+
+fit_arma1_arch3d@fit$matcoef
+
+The AR(1) mean equation with an ARCH(3) variance process and standard normal errors is defined as:
+$$r_t = \mu + \phi_1 r_{t-1} + \epsilon_t$$$$\
+epsilon_t \sim N(0, \sigma^2_t)$$
+$$\sigma^2_t = \omega + \alpha_1 \epsilon^2_{t-1} + \alpha_2 \epsilon^2_{t-2} + \alpha_3 \epsilon^2_{t-3}$$
+
+The resulting equation from the model is:
+Mean Equation:$$r_t = 0.0979 - 0.0278 r_{t-1} + \epsilon_t$$
+
+Variance Equation:$$\sigma^2_t = 2.0046 + 0.1348 \epsilon^2_{t-1} + 0.0799 \epsilon^2_{t-2} + 0.1924 \epsilon^2_{t-3}$$
+From the estimated model with an ARCH(3) component added, all p-values for alpha's 1,2,3 are > 0.05 suggesting they are highly statistically significant with values ~ 1.79 *10^-5, 8.85 *10^-4, 3.77 *10^-8 respectively.
+All values are also >0 satisfying the positive conditional variances requirement.
+
+# e) Run a GARCH(1,1) model and comment on its coefficient estimates
+
+garch1_spec <- ugarchspec(
+  variance.model = list(model = "sGARCH", garchOrder = c(1, 1)),
+  mean.model = list(armaOrder = c(1, 0), include.mean = TRUE),
+  distribution.model = "norm"        
+)
+
+garch_fit <- ugarchfit(spec = garch1_spec, data = lr)
+garch_fit@fit$matcoef
+
+This is ran using normal distribution of errors.
+The GARCH(1,1) conditional variance equation is defined as:$$\sigma^2_t = \omega + \alpha_1 \epsilon^2_{t-1} + \beta_1 \sigma^2_{t-1}$$
+Substituting the estimated values into the GARCH(1,1) variance equation yields:$$\sigma^2_t = 0.0443 + 0.0426 \epsilon^2_{t-1} + 0.9444 \sigma^2_{t-1}$$
+From this the parameter estimates are all strictly positive and have p-values < 0.05 suggesting they are highly statistically significant. The sum of ARCH and GARCH coefficients = 0.9870, very close to 1, as such the series exhibits high volatility persistence, indicating market shocks to Google returns have a long-lasting impact on the assets conditional variance with slow decay over time.
+
+# f) Determine whether the ARCH(3) or GARCH(1,1) model provides the better fit to the
+#    data, using the same mean equation as in part b. Clearly state the statistics that
+#    you use and present all required steps.
+
+ic_arch3 <- infocriteria(fit_arma1_arch3d)
+ic_garch11 <- infocriteria(garch_fit)
+ic_comparison <- data.frame(
+  Metric = rownames(ic_arch3),
+  ARCH_3 = as.numeric(ic_arch3),
+  GARCH_1_1 = as.numeric(ic_garch11)
+)
+
+The GARCH(1,1) model provides a superior fit to the data compared to the ARCH(3) model.
+The AIC for the GARCH(1,1) specification ($3.8903$) is strictly lower than that of the ARCH(3) specification ($3.9318$),
+the lower value dictates that the GARCH(1,1) model minimizes information loss and is the preferred specification.
+Additionally it has a lower bayseian information criterion, values "Bayes" in the table.
+Furthermore we can test for left-over ARCH using standardized residuals for the GARCH model.
+
+
+
+# Q2
+
+
+# Q3
+# a & b
+
+start_date <- "2015-12-01"
+end_date   <- "2025-12-31"
+tickers <- c("VBK", "VB", "VBR",   # Small: growth, blend, value
+             "VOT", "VO", "VOE",   # Mid:   growth, blend, value
+             "VUG", "VV", "VTV")   # Large: growth, blend, value
+getSymbols(tickers, src = "yahoo", from = start_date, to = end_date)
+
+
+vbk.m.p = to.monthly(VBK$VBK.Adjusted, OHLC = FALSE)
+vb.m.p  = to.monthly(VB$VB.Adjusted, OHLC = FALSE)
+vbr.m.p = to.monthly(VBR$VBR.Adjusted, OHLC = FALSE)
+
+vot.m.p = to.monthly(VOT$VOT.Adjusted, OHLC = FALSE)
+vo.m.p  = to.monthly(VO$VO.Adjusted, OHLC = FALSE)
+voe.m.p = to.monthly(VOE$VOE.Adjusted, OHLC = FALSE)
+
+vug.m.p = to.monthly(VUG$VUG.Adjusted, OHLC = FALSE)
+vv.m.p  = to.monthly(VV$VV.Adjusted, OHLC = FALSE)
+vtv.m.p = to.monthly(VTV$VTV.Adjusted, OHLC = FALSE)
+
+
+m.p <- merge(vbk.m.p, vb.m.p, vbr.m.p,
+             vot.m.p, vo.m.p, voe.m.p,
+             vug.m.p, vv.m.p, vtv.m.p)
+
+colnames(m.p) <- c("VBK", "VB", "VBR",
+                   "VOT", "VO", "VOE",
+                   "VUG", "VV", "VTV")
+
+# Log Returns
+m.lr.p = na.omit(diff(log(m.p)))*100
+# sample mean
+mean_vec_lr <- colMeans(m.lr.p)
+
+mean_box_lr <- matrix(mean_vec_lr,
+                      nrow = 3, byrow = TRUE,
+                      dimnames = list(c("Small", "Mid", "Large"),
+                                      c("Growth", "Blend", "Value")))
+mean_box_lr <- round(mean_box_lr, 3)
+cat("\n3x3 Style Box: Mean Monthly Lor Return (%)\n")
+mean_box_lr
+
+# 95% confidence level, 1-month horizon
+confidence <- 0.95
+
+var_vec <- apply(m.lr.p, 2, function(etf) {
+  -quantile(etf, probs = 1 - confidence)  # negative so VaR is expressed as a positive loss
+})
+
+# 3x3 style box: VaR
+var_box <- matrix(var_vec,
+                  nrow = 3, byrow = TRUE,
+                  dimnames = list(c("Small", "Mid", "Large"),
+                                  c("Growth", "Blend", "Value")))
+var_box <- round(var_box, 3)
+cat("\n3x3 Style Box: Historical VaR 95% Monthly Log Return (%)\n")
+var_box
+
+Answer: (a) and (b)
+The risk measure selected is Value at Risk (VaR) at the 95% confidence level, expressed as a percentage of portfolio value representing the monthly loss threshold. Value at Risk (VaR) is defined as the maximum loss expected to occur in no more than 5% of monthly observations over the sample period. Formally, the 95% VaR is the 5th percentile of the empirical distribution of monthly log-returns. The VaR calculation was performed using the historical 5th percentile of the monthly log-return distribution over the 120 observations, and chosen on the positive side of the distribution. (VaR %  therefore expressing a negative loss amount.) I chose to show the VaR of the 9 ETF's for the following reasons;
+
+Firstly, for risk-adverse investors its an easily understandable and important metric to understand how much one might lose in a serve market draw down. Unlike a measure like standard deviation, which treats all volatility equally, VaR highlights downside tail losses, which for risk-adverse investors serves as a conceptual benchmark to see which ETF's offer larger drawdowns and losses, which reflects real investor preferences since investors hate losses more than they value gains,
+
+Second, VaR at the 95% confidence level provides a definitive risk metric that translates directly into decision-making: "What is the worst plausible monthly loss I should expect?" This is more intuitive for investors as they can directly see the what kind of risk drawn downs they can expect chasing higher returns, highlighting the idea of "no free lunch".
+
+Thirdly, equity returns particularly for growth stocks—exhibit fat tails and negative skewness, meaning historical worst-case scenarios are worse than a normal distribution predict. A historical VaR approach captures these  tail characteristics. This is particularly relevant for the growth-oriented ETFs (VBK, VOT, VUG) in this analysis, and is shown in the results below:
+var_box
+Despite VUG (Large Growth) having the highest mean monthly return from the workshop analysis, it carries an 8.837% VaR, meaning for a $50,000 investment, an investor could lose $4,419 worst-case in one month. In contrast, VTV (Large Value) offers a $3,270 maximum loss in the worst 5% of months, a meaningful difference for risk-averse investors. 
+
+Comparing returns and risk across the ETFs reveals a nuanced risk-return relationship that broadly supports the practitioner's caution, but with important exceptions;
+Within size categories, a clear positive risk-return trade-off emerges. Large-cap ETFs show returns increasing sharply across styles (Value 0.927%, Blend 1.156%, Growth 1.347%), paired with corresponding VaR increases (6.540%, 7.230%, 8.837%). Mid-cap follows this pattern (Value 0.797%, Growth 0.926%; VaR: 7.422%, 8.499%). However, small-cap presents an anomaly: returns are essentially flat (0.814%–0.836%) while VaR systematically increases with growth orientation (8.534%–9.414%), suggesting small-cap growth provides no return compensation for elevated tail risk.
+Within style categories, the relationship is more complex. Growth returns increase strongly with size (0.823%, 1.347%), but VaR does not increase monotonically (9.414%, 8.499%, 8.837%), meaning large-cap growth offers superior risk-adjusted returns. Critically, Blend and Value categories show inverse relationships: larger ETFs deliver both higher returns and lower risk (Blend: 0.836%→1.156% returns; 8.595%, 7.230% VaR).  
+This suggests size diversification reduces idiosyncratic risk without sacrificing returns.
+Direct comparison of VUG versus alternatives: Despite VUG's highest mean return (1.347%), it carries 8.837% VaR. A risk-averse investor would rationally prefer VV (Large Blend), which offers 86% of VUG's return (1.156%) while bearing only 82% of its tail risk (7.230%). Even more striking, VTV (Large Value) with 0.927% return carries merely 6.540% VaR—the lowest in the dataset.

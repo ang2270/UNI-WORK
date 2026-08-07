@@ -1,0 +1,4 @@
+"0","anz1.df <- readxl::read_excel(""anz1.xlsx"")   "
+"0",""
+"0","library(xts)"
+"0","anz1.xts <- as.xts(anz1.df)"

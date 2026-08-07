@@ -1,0 +1,150 @@
+---
+title: "Week 5 Tutorial"
+format: 
+       pdf:
+        papersize: A4
+editor: visual
+execute: 
+  message: false
+---
+
+\definecolor{awesome}{rgb}{1.0,0.13,0.32}
+\definecolor{bondiblue}{rgb}{0.0,0.58,0.71}
+
+### Introduction
+
+This tutorial will help you familiarize yourself with optimal portfolio selection. We will use the **Solver** add-in from Microsoft Excel, so please:
+
+-   open the \textcolor{blue}{\textbf{W5Q1Solver.xlsx}} file from Moodle.
+-   install Solver
+
+### Question 1
+
+Assume three risky assets, namely Microsoft (M), Nordstrom (N) and Starbucks (S). Let $r_{i}$ denote the return on asset $i$ where $i=M,N,S$. The following information is given for these assets:
+
+$$ \begin{tabular}{|l|c|c|c|c|}
+\hline
+Stock $i$ & $\mu _{i}$ & $\sigma _{i}$ & Pairs ($i,j$) & $\sigma _{ij}$ \\ 
+\hline
+M (Microsoft) & 0.0427 & 0.1000 & (M,N) & 0.0018 \\ \hline
+N (Nordstrom) & 0.0015 & 0.1044 & (M,S) & 0.0011 \\ \hline
+S (Starbucks) & 0.0285 & 0.1411 & (N,S) & 0.0026 \\ \hline
+\end{tabular} $$
+
+where $\mu _{i},$ $\sigma _{i}$ and $\sigma _{ij}$ denote expected returns, standard deviations and covariances for each asset, respectively.
+
+1.  Construct a $3\times 1$ vector, $\boldsymbol{\mu }$, containing the expected returns of these three assets. Similarly, construct the $3\times 3$ variance-covariance matrix, $\boldsymbol{\Sigma }$, associated with the performance of these assets based on the information provided (do this in the **W5Q1Solver.xlsx** file).
+
+2.  Consider a portfolio, P, that consists of assets M,N,S, with return given by: $$r_{P}=w_{M}r_{M}+w_{N}r_{N}+w_{S}r_{S},$$ where $w_{M},w_{N},w_{S}$ are the (non-negative) weights assigned to each of the assets, such that $w_{M}+w_{N}+w_{S}=1$. Using matrix notation write the analytical expressions for portfolio expected return, $\mu _{P}$, and portfolio variance, $\sigma _{P}^{2}$.
+
+3.  Find the numerical solution to this optimization problem in Excel using the information provided in the table above (make use of the Excel add-in "Solver").
+
+4.  Find the analytic solution to the following optimization problem $$\min_{w_{M},w_{N},w_{S}}\sigma _{P}^{2}\text{, such that }w_{M}+w_{N}+w_{S}=1,$$ using the Lagrange multiplier method. \[not required\]
+
+5.  Using the analytical formula for the vector of optimal weights in part 4, compute the optimal weights assigned to the Global Minimum Variance portfolio.
+
+\textcolor{awesome}{\textbf{Use the tab named 'Analytical' in the Excel file (as in Part 3) and matrix multiplication in Excel.}}
+
+## Question 2
+
+Consider stock prices for Microsoft (MSFT) and Walmart (WMT) from 1990 to 2024. The stock prices can be found in the file \textcolor{blue}{\textbf{msft\_wmt.wf1}} in the tutorial folder. Use these data to answer the following questions.
+
+1.  Compute the log-returns on Microsoft and Walmart at the monthly frequency.
+
+\textcolor{awesome}{\textbf{Download the "msft\_wmt.xslx" file from Moodle into your project and run the code below.}}
+
+\textcolor{awesome}{First we need to load the \textbf{xts} library and create better dates (the original date format is incompatible with xts). We will look at what we have and plot the data.}
+
+```{r}
+library(xts)
+
+mw_df <- readxl::read_excel("msft_wmt.xlsx")   # <-- change filename
+
+# ignore the date column
+mw_df = mw_df[,-1]
+
+# Jan 1990 to March 2024
+# create an xts object, but first create the date. 
+idx <- seq(from = as.Date("1990-01-01"), by = "month", length.out = nrow(mw_df))
+prices.xts <- xts(mw_df, order.by = idx)
+
+# just display month-year without date
+index(prices.xts) <- as.yearmon(index(prices.xts))  
+head(prices.xts)
+
+
+plot(prices.xts, legend.loc = "topleft", main = "Prices")
+
+```
+
+\textcolor{awesome}{Now, as usual, we calculate log-returns. This time we will do both at a time and create two columns.}
+
+```{r}
+# log return for both msft and wmt
+logret.xts <- diff(log(prices.xts)) 
+logret.xts <- na.omit(logret.xts)   # removes the first NA created by diff()
+colnames(logret.xts) <- c("msft", "wmt")  # name the column
+```
+
+2.  Compute the sample variance-covariance matrix of returns for these two stocks.
+
+\textcolor{awesome}{Since we have 2 columns of data, we have a simple formula to get the sample var-cov matrix.}
+
+```{r}
+cov(logret.xts)
+```
+
+3.  Estimate the regression model
+
+$$r_{wal,t}=\beta _{0}+\beta _{1}\left( r_{wal,t}-r_{mic,t}\right) +\epsilon_{t},$$
+
+where $\epsilon _{t}$ is a disturbance term. Interpret the estimate of $\beta _{1}$.
+
+\textcolor{awesome}{We can use logret.xts directly. We will create a new variable for the difference - msopt to make the output cleaner. We could use the I(.) function to create the difference directly in the lm(.) function, but the output is messy.}
+
+```{r}
+
+msopt <- logret.xts$wmt-logret.xts$msft
+
+minvar <- lm(logret.xts$wmt ~ msopt)
+summary(minvar)
+```
+
+5.  Using the regression results from the previous question, construct a hypothesis test that an equally weighted portfolio would result in a minimum variance portfolio
+
+$$H_{0}:\beta _{1}=0.5\text{ v.s. }H_{0}:\beta _{1}\neq 0.5.$$
+
+\textcolor{awesome}{\textbf{NOTE: the calculated t-value and the p-value from the regresssion output is based upon testing if $\beta_1=0$ against $\beta_1\neq0$. This means that we have to calcuate the t-value manually, as well as the p-value.}}
+
+\textcolor{awesome}{We test $H_0:\mu=0.5$ against $H_1:\mu\neq0.5$. The test statistic is $t=(\hat{\beta_1}-0.5)/s.e.(\hat{\beta_1})\sim t_{408}$ under $H_0$. The calculated \textit{t}-statistic is $t=(0.289473-0.5)/0.030860)$. The code below does this in R - you must fill in some gaps and set eval = TRUE.}
+
+```{r, eval = FALSE}
+# Find the calculate t-value
+
+bhat  <- coef(minvar)["msopt"]
+se <- summary(minvar)$coefficients["msopt", "Std. Error"]
+
+
+t_calc <- ???
+
+
+c("t-calc", round(t_calc, 3))
+```
+
+```{r, eval = FALSE}
+# Find the p-value
+# degrees of freedom = n-2
+
+dfr <- nobs(minvar) - 2
+
+# p-value - find area in tails from t_calc in a t dist with n-1 df 
+
+# pt gives are to the LEFT, so we need to always use the negative t_calc
+
+# -abs(.) will always be negative, regardless of the sign of t_calc
+
+p_val  <- round(???, dfr),3) 
+
+c("p-value", p_val)
+
+```

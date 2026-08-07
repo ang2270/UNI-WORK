@@ -1,0 +1,313 @@
+---
+title: "Week 9 Tutorial"
+format: 
+       pdf:
+        papersize: A4
+editor: visual
+execute: 
+  message: false
+  warning: false
+---
+
+\definecolor{awesome}{rgb}{1.0,0.13,0.32}
+\definecolor{bondiblue}{rgb}{0.0,0.58,0.71}
+
+### Introduction
+
+This workshop will help you familiarize yourself with autoregressive conditional heteroskedasticity (ARCH) models, as well as testing for the adequacy of these models.
+
+##### Work in your groups to come up with strategies and answers for the blank sections. You have all of the code, we need you to interpret it. This helps for your assignment.
+
+## Question 1
+
+Using the data in \textcolor{blue}{IBM\_daily\_2024.xlsx} and \textcolor{blue}{IBM\_monthly\_2024.xlsx}, generate daily and monthly returns on IBM using the corresponding closing stock price. Use these data to answer the following questions.
+
+1.  Estimate an ARMA(1,1) model for both daily and monthly returns. Does the ARMA(1,1) model appear to fit the daily or monthly return series better? \textit{HINT: use the residual correlograms.}
+
+\textcolor{awesome}{With time series data, we do not know what a sensible lag structure is, so we usually fit a few models. What we hope is that we capture all of the time-dynamics in our model, which means that there should be no serial correlation in the residuals. This can be an iterative process.}
+
+\textcolor{awesome}{Let's assume that we estimated the constant mean equation for both series of returns and found evidence of persistence in the residuals. We then fit some AR models, however we could not remove all of the persistence without using a high order for p.}
+
+\textcolor{awesome}{The next step would be to try using an ARMA(1,1) model. This is an extension of the AR(p) model. Generally, if we find evidence of a high-order AR model in returns, an ARMA model can be used to capture the time dynamics more efficiently.}
+
+\textcolor{awesome}{The ARMA(1,1) model is defined as:}
+
+\textcolor{awesome}{$$r_{t} = c+\rho r_{t-1}+\epsilon _{t}+\theta \epsilon _{t-1} $$}
+
+\textcolor{awesome}{The ARMA(1,1) model for the daily data and monthly data is: }
+
+```{r}
+
+library(xts)
+
+# Daily data
+
+d.df <- readxl::read_excel("ibm_daily_2024.xlsx")   
+
+# daily close convert to xts object
+d.close.xts = as.xts(d.df) 
+
+
+# log return - in percentage
+lretd <- na.omit(diff(log(d.close.xts)))*100 
+colnames(lretd) <- "lretd"
+# head(lretd) 
+# tail(lretd)
+
+# ARMA(1,1)
+
+fit_armad <- arima(as.numeric(lretd), order = c(1,0,1),
+                   include.mean = TRUE,
+                  method = "CSS")  
+
+fit_armad
+
+# residuals from ARMA(1,1)
+res_d <- residuals(fit_armad)
+
+
+# Monthly data
+
+m.df <- readxl::read_excel("ibm_monthly_2024.xlsx") 
+
+# from Jan 1980 to May 2024
+library(xts)
+idx <- seq(from = as.Date("1980-01-01"),
+           by   = "month",
+           length.out = nrow(m.df))
+
+close.xts <- xts( m.df, order.by = idx) 
+
+# convert "1980-01-01" to "Jan 1980"
+index(close.xts) <- as.yearmon(index(close.xts))  
+# head(close.xts)
+# tail(close.xts)
+
+
+# log return - NOT in percentage
+lretm <- na.omit(diff(log(close.xts)))
+colnames(lretm) <- "lretm"
+# head(lretm) 
+# tail(lretm)
+
+
+# ARMA(1,1)
+
+fit_armam <- arima(as.numeric(lretm), order = c(1,0,1),
+                  include.mean = TRUE,
+                  method = "CSS")  
+
+fit_armam
+
+# residuals from ARMA(1,1)
+res_m <- residuals(fit_armam)
+
+
+```
+
+\textcolor{awesome}{With time series data, we do not know what a sensible lag structure is, so we usually fit a few models. What we hope is that we capture all of the time-dynamics in our model, which means that there should be no serial correlation in the residuals.}
+
+\textcolor{awesome}{We could perform a serial-correlation LM test to see if we have adequately captured the time dynamics, and/or use the correlograms (the choice is yours). We keep estimating different models until we see no persistence. Here, we will use the correlograms below to check.}
+
+```{r, echo=FALSE}
+#source("Correlogram.R")
+
+source(here::here("Correlogram.R"))
+
+# residuals correlogram
+
+correlogram(res_d,max.lag = 20, main.acf  = "Correlogram of Daily Residuals")
+
+
+correlogram(res_m,max.lag = 20, main.acf  = "Correlogram of Monthly Residuals")
+```
+
+#### what do these correlograms tell us?
+
+2.  Conduct an ARCH(5) test for the model residuals of the ARMA(1,1) in \textbf{levels}. Carry out this test for both daily and monthly returns. What do the results of this imply?
+
+\textcolor{awesome}{Refer to the ARCH test handout for the appropriate steps. We have done this test in Week 6. This is a test for ARCH, not leftover ARCH. A test for left-over ARCH is the second test in the ARCH test handout.}
+
+\textcolor{red}{In R we use the ArchTest function from the FinTS package to do this test. This will give us the p-value of the test only - you must remember to write out the steps if required.}
+
+```{r}
+# ARCH(5) test on residuals
+# Daily
+FinTS::ArchTest(res_d, lags = 5)
+
+# Monthly
+FinTS::ArchTest(res_m, lags = 5)
+```
+
+#### What do the test results suggest? What should you do next?
+
+3.  For both daily and monthly returns, fit an ARMA(1,1) model with ARCH(2) errors. That is, fit the model:
+
+$$r_{t} = c+\rho r_{t-1}+\epsilon _{t}+\theta \epsilon _{t-1}, $$ $$\epsilon _{t} \sim N\left( 0,\sigma _{t}^{2}\right) ,$$ $$\sigma _{t}^{2} =a_{0}+a_{1}\epsilon _{t-1}^{2}+a_{2}\epsilon _{t-2}^{2}.$$
+
+\textcolor{awesome}{When we estimate ARCH models, it is important to remember that there are two stages. First we estimate log-returns in levels, which in this case is our ARMA(1,1) model. Then we define our ARCH model. We need to report all three lines of equations that were given above.}
+
+\textcolor{awesome}{\textit{\textbf{NOTE: The specification for the variance is deterministic (it has no error term) so assessing fit, using $R^2$ does not make sense in ARCH models. So we do not need to look at $R^2$ or the log-likelihood.}}}
+
+\textcolor{awesome}{When we estimate the equation, we need to use the \textbf{rugarch} package. This requires us to specify the ARCH model, the mean equation and to define the distribution to be used.}
+
+\textcolor{awesome}{You only need to change the orders where required. You could try different distributions for your project if you wish, as long as you can justify your choice.}
+
+```{r}
+# Specify the ARMA(1,1)-ARCH(2) model 
+library(rugarch)
+
+spec_arma11arch2 <- ugarchspec(
+  variance.model = list(
+    model = "sGARCH",          # standard GARCH
+    garchOrder = c(2, 0)       # ARCH(2)
+  ),
+  mean.model = list(
+    armaOrder = c(1, 1),       # ARMA(1,1)
+    include.mean = TRUE
+  ),
+  distribution.model = "norm"  # normal errors 
+)
+
+# Daily
+fit_arma11arch2d <- ugarchfit(
+  spec = spec_arma11arch2,
+  data = lretd
+)
+
+# Monthly
+fit_arma11arch2m <- ugarchfit(
+  spec = spec_arma11arch2,
+  data = lretm
+)
+```
+
+\textcolor{awesome}{In the specification code, we first specify our variance (or ARCH) in the \textbf{variance.model} section, then specify our level equation in the \textbf{mean.model} section (see the comments in the code). You can also select an error distribution if you wish. We will use the Normal distribution, but you could also use the t-distribution for example (you could try this in your Part B assignment).}
+
+\textcolor{awesome}{The estimation results are below. To report these equations, substitute the estimate coefficients and their standard errors into the three equations defined above (as you normally do when reporting regressions).}
+
+\textcolor{awesome}{NOTE: the omega in the output is $a_0$ in our notation.}
+
+\textcolor{awesome}{The estimation output for the Daily series is:}
+
+```{r}
+# inspect results
+fit_arma11arch2d@fit$matcoef 
+
+```
+
+\textcolor{awesome}{The estimation output for the Monthly series is:}
+
+```{r}
+fit_arma11arch2m@fit$matcoef
+
+```
+
+4.  For both return series, conduct an ARCH(5) test to determine if any excess autocorrelation exists in the variances of the series at the $5\%$ level.
+
+\textcolor{awesome}{\textit{HINT: this is a test for \textbf{left-over ARCH} and does not have the same auxiliary regression as the test in part 2 - it uses standardised residuals.}}
+
+\textcolor{awesome}{Since we have estimated ARCH(2), it does not make sense to test for leftover ARCH of order 2 or below. We want to know if our ARCH models have captured all of the ARCH effects. Remember that we do not know what a sensible lag structure is, so we let the data tell us.}
+
+\textcolor{awesome}{Refer to the ARCH test handout for the required steps. Be sure to use the ARCH model equations. Since the test for left-over ARCH uses standardised residuals, we need to specify this in our code. If you compare this code to the ARCH test code from step earlier, you should notice a difference. The ARCH test for the daily series is:}
+
+```{r}
+# Q4 - left-over arch(5) test daily
+# standardised residuals 
+res_s.arch2d    <- residuals(fit_arma11arch2d, standardize = TRUE) 
+
+# Left over ARCH(5) test
+FinTS::ArchTest(res_s.arch2d, lags = 5)  
+```
+
+For the Monthly series, we get:
+
+```{r}
+# standardised residuals 
+res_s.arch2m    <- residuals(fit_arma11arch2m, standardize = TRUE) 
+
+# Left over ARCH(5) test
+FinTS::ArchTest(res_s.arch2m, lags = 5)  
+```
+
+#### What do the test results suggest? What should you do next?
+
+5.  For the \textbf{daily} returns, re-estimate the model but with ARCH(5) errors.
+
+\textcolor{awesome}{We don't know how many ARCH lags we need, so let's estimate an ARCH(5) model on the daily returns. The estimated output is below:}
+
+```{r}
+# re-estimate with ARCH(5) now
+
+spec_arma11arch5d <- ugarchspec(
+  variance.model = list(
+    model = "sGARCH",          # standard GARCH
+    garchOrder = c(5, 0)       # ARCH(5)
+  ),
+  mean.model = list(
+    armaOrder = c(1, 1),       # ARMA(1,1)
+    include.mean = TRUE
+  ),
+  distribution.model = "norm"  # normal errors 
+)
+
+# 2. Estimate the ARMA-GARCH models
+fit_arma11arch5d <- ugarchfit(
+  spec = spec_arma11arch5d,
+  data = lretd
+)
+
+# inspect results
+
+fit_arma11arch5d@fit$matcoef 
+```
+
+6.  For both the daily and monthly models, obtain the correlograms of the squared residuals. Also, conduct an ARCH(7) test for each of these models.
+
+\textcolor{awesome}{Similar to identifying the lag structure of the mean equation, we can iteratively use ARCH tests to determine the lag structure of the ARCH effects, or use a correlogram of the squared residuals. We use squared residuals since we are looking for dynamic patterns in the variance, and the squared residuals approximate the variance.}
+
+\textcolor{awesome}{For leftover ARCH, we use the correlogram of the squared standardised residuals. If there is a pattern, there is leftover ARCH. The correlograms for the squared (standardised) residuals of both series are below:}
+
+```{r}
+# correlogram of standardized squared residuals from ARCH5
+res_s.arch5d <- residuals(fit_arma11arch5d, standardize = TRUE)
+
+# square residuals
+res_s.arch5d_sq <- res_s.arch5d^2
+
+correlogram(res_s.arch5d_sq,max.lag = 20, 
+            main.acf  = "Correlogram of Daily Squared Standardised Residuals")
+
+# standardised residuals squared from ARCH2
+res_s.arch2m_sq <- res_s.arch2m^2
+correlogram(res_s.arch2m_sq,max.lag = 20, 
+            main.acf  = "Correlogram of Monthly Squared Standardised Residuals")
+```
+
+#### What do the correlograms suggest? Is there left-over ARCH?
+
+\textcolor{awesome}{The left over ARCH(7) test for the daily series is (remember this is using the ARCH(5) residuals):}
+
+```{r}
+# Left over ARCH(7) test from ARCH 5 model
+# standardised residuals 
+
+FinTS::ArchTest(res_s.arch5d, lags = 7)  
+```
+
+\textcolor{awesome}{For monthly (using the ARCH(2) residuals):}
+
+```{r}
+# Left over ARCH(7) test
+FinTS::ArchTest(res_s.arch2m, lags = 7)  
+```
+
+#### What do the test results suggest? What should you do next?
+
+7.  What does this tell us about the number of required ARCH terms needed to successfully capture conditional heteroskedasticity?
+
+#### Summarise the results.
+
+8.  Why is the same behaviour not observed in the monthly series?
+
+#### See if your group can work this out

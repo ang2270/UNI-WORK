@@ -1,0 +1,350 @@
+---
+title: "Week 6 Tutorial"
+format: 
+       pdf:
+        papersize: A4
+        
+execute: 
+   message: false
+  
+editor: visual
+---
+
+\definecolor{awesome}{rgb}{1.0,0.13,0.32}
+\definecolor{bondiblue}{rgb}{0.0,0.58,0.71}
+
+-   Change format to html if you can't render to pdf
+-   Change eval to true so the code runs!
+
+### Introduction
+
+This workshop will help you familiarize yourself with uni- and multi-factor CAPM modeling.
+
+### Question 1
+
+Consider again the stock prices for Microsoft (MSFT) and Walmart (WMT) from Jan 1990 to Mar 2024, as well as data on the risk free rate and excess returns on the "market portfolio", denoted by MKT-RF. These are given in \textcolor{blue}{XSreturns.xlsx}.
+
+Use these data to answer the following questions.
+
+1.  Using the data on the risk free rate, run the code below to construct excess returns on Microsoft (\textbf{xsm}) and Walmart (\textbf{xsw}). \textcolor{awesome}{\textit{NOTE: The RF series is in percent so we need to adjust the log-returns so that the series have similar magnitudes.}}\smallskip
+
+```{r}
+library(xts)
+
+df <- readxl::read_excel("XSreturns.xlsx")  
+
+# ignore the date column
+df = df[,-1]
+
+# Jan 1990 to March 2024
+
+# create an xts object, but create the date first. 
+idx <- seq(from = as.Date("1990-01-01"), by = "month", length.out = nrow(df))
+dataset.xts <- xts(df, order.by = idx)
+
+# Check that it works - comment out when rendering
+head(dataset.xts)
+
+# just display month-year without date
+index(dataset.xts) <- as.yearmon(index(dataset.xts))  # match by year-month
+
+# Check that it works - comment out when rendering
+head(dataset.xts)
+
+# excess log return msft (%)
+msft.logret <- diff(log(dataset.xts$MSFT))*100  
+msft.logret <- na.omit(msft.logret)# removes the first NA created by diff()
+xs.msft <- msft.logret - dataset.xts$RF
+
+# excess log return WMT (%)
+wmt.logret <- diff(log(dataset.xts$WMT))*100  
+wmt.logret <- na.omit(wmt.logret)  # removes the first NA created by diff()
+xs.wmt <- wmt.logret - dataset.xts$RF
+
+# merge 2 variables
+xs.logret <- merge(xs.msft, xs.wmt)
+colnames(xs.logret) <- c("xs.msft", "xs.wmt")  # name the column
+
+# Check that it works - comment out when rendering
+head(xs.logret)
+```
+
+2.  Use the code below to plot the two series. Which do you prefer? Can you identify any issues?
+
+```{r}
+plot(xs.logret,main="Excess Log Returns (%)",legend.loc="topleft", 
+
+col = c(
+    adjustcolor("forestgreen", alpha.f = 0.4),
+    adjustcolor("blue",  alpha.f = 0.4)
+  ),
+  lwd = 2)
+
+# Optional: create multi-panel plots 
+plot(xs.logret, main="Log Returns", multi.panel=TRUE)
+
+# excess return on market portfolio MKT-RF, remove the first observation
+mkt_rf <- dataset.xts$MKT_RF[-1,]
+```
+
+\textcolor{bondiblue}{Answer}
+
+\smallskip
+
+3.  Estimate the CAPM regression model
+
+$$r_{it}-r_{ft}=a_{i}+\beta_{i}MKT\text{-}RF_{t}+\epsilon_{it},$$
+
+where $r_{it}-r_{ft}$ corresponds to excess returns on $i=M,W$ where M = Microsoft and W = Walmart from part 1. Interpret the estimated beta coefficient in each case. \smallskip
+
+\textcolor{bondiblue}{Below is the code for the msft regression. Copy the code for wlmt \textit{(Hint: highlight the code, CTRL+f then find and replace msft with wmt.)}}
+
+```{r}
+msft.capm.fit <- lm(xs.msft ~ mkt_rf)
+summary(msft.capm.fit)
+
+
+# do t-test and compute p-value
+b  <- msft.capm.fit$coefficients[2]
+se <- sqrt(vcov(msft.capm.fit)["mkt_rf", "mkt_rf"])
+
+bhat  <- coef(msft.capm.fit)["mkt_rf"]
+se <- summary(msft.capm.fit)$coefficients["mkt_rf", "Std. Error"]
+
+msft.t_stat <- (b - 1) / se
+msft.t_stat
+
+# compute degrees of freedom = n-2
+
+dfr <- nobs(msft.capm.fit)-2
+
+# critical value
+# tcrit <- qt(1 - alpha/2, df )
+
+# tcrit <- qt( 0.975 , dfr   )
+# tcrit
+
+# p-value
+
+# pt() is the CDF (cumulative distribution function) of the 
+# Student's t distribution.
+# pt(q, df) returns the probability (area) to the left of q under a t-curve.
+
+msft.p_val  <- 2 * pt(-abs(msft.t_stat), dfr ) 
+
+# report t-test and pvalue
+c(t = msft.t_stat, p_value = msft.p_val)
+```
+
+```{r}
+# paste code here
+
+
+```
+
+\textcolor{bondiblue}{These are simple CAPM regressions. $\beta$ represents the asset's risk relative to the market. If $\beta=1$, the asset tracks the market, if it is greater than one it is aggressive, and if it is between zero and one it is conservative (there are other interpretations for the CAPM, so check the LN's). Based upon the regression values, Microsoft is an aggressive stock, while Walmart can be classed as a conservative stock.}
+
+\textcolor{bondiblue}{The intercept also tells us if the asset has adequate reward for the assumed risk. Both intercepts are above zero, so it seems as though both assets provide excess returns for the assumed risk.}
+
+\smallskip
+
+4.  For each asset, $i$, individually test the restrictions $a_{i}=0$ and $\beta_{i}=1$. Be sure to explain in a sentence what your conclusion means in context.
+
+\textcolor{bondiblue}{Obviously we can't simply compare the intercept to zero and the slope to 1 and make statements about the asset. We need to test the hypotheses in case the differences are due to chance.}
+
+\textcolor{bondiblue}{Answer (in context!)}
+
+\bigskip
+
+## Question 2
+
+First we need to get the data with the code below, using the `frenchdata` library (as you will do in your assignment). There is no need to show this code in the assignment answer. All data is of the same magnitude.
+
+1.  Estimate the four-factor CAPM model for the "Consumer" portfolio (Jan 1927-Dec 2025). \smallskip
+
+\textcolor{bondiblue}{We add the SMB (Small minus Big), HML (High minus Low) and MOM (Momentum) variables to the simple CAPM equation. Remember that the multifactor CAPM models can only be used on US stocks.}
+
+-   \textcolor{bondiblue}{\textbf{SMB} represents the spread in returns between small- and large-sized firms. If the coefficient is positive, the asset behaves more like a small-stock portfolio. If the coefficient is negative, the asset behaves more like a big-stock portfolio.}
+
+-   \textcolor{bondiblue}{\textbf{HML} the spread in returns between value and growth stocks. If the coefficient is positive, then the asset behaves more like a value stock or portfolio. If the coefficient is negative, the asset behaves more like a growth stock or portfolio.}
+
+-   \textcolor{bondiblue}{\textbf{MOM} captures returns constructed by buying stocks with high returns and selling stocks with low returns over the same period.}
+
+\textcolor{bondiblue}{Run the code below to download the Fama French data.}
+
+```{r, message=FALSE}
+
+library(frenchdata)
+
+#########################################
+# (a) "Fama/French 3 Factors" Monthly
+#########################################
+
+ff3 <- download_french_data("Fama/French 3 Factors")
+
+ff3_monthly_raw <- ff3$subsets$data[[1]] 
+
+# convert to xts object 
+library(xts) 
+# if date is like 192607, 202312, etc.
+ff3_monthly_raw$date <- as.yearmon(as.character(ff3_monthly_raw$date), 
+                                   format = "%Y%m")
+ff3.xts <- xts(
+  ff3_monthly_raw[, c("Mkt-RF","SMB","HML","RF")] ,   # drop the date column
+  order.by = as.Date(ff3_monthly_raw$date)            # month index
+)
+
+# Optional: Rename the columns
+colnames(ff3.xts) <- c("mkt_excess","smb","hml","rf") 
+
+# convert from "1926-07-01" to "Jul 1926" 
+index(ff3.xts) <- as.yearmon(index(ff3.xts))  
+
+#########################################
+# (b) "5 Industry Portfolios"
+#########################################
+
+# Download the dataset (exact name on Ken French's library)
+ind5 <- download_french_data("5 Industry Portfolios")
+
+# Grab the "Average Value Weighted Returns -- Monthly"
+id5.df <- ind5$subsets$data[[1]] 
+
+# convert to xts
+id5.df$date <- as.yearmon(as.character(id5.df$date), format = "%Y%m")
+id5.xts <- xts(
+  id5.df[, c("Cnsmr","Manuf","HiTec","Hlth","Other")],# drop the date column
+  order.by = as.Date(id5.df$date)                 # month index
+)
+
+# convert from "1926-07-01" to "Jul 1926" 
+index(id5.xts) <- as.yearmon(index(id5.xts))  # match by year-month
+
+#####################################
+# (c) Momentum Factor (Mom)
+####################################
+
+
+# 1) Download the dataset (exact name on Ken French's library)
+mom_raw <- download_french_data("Momentum Factor (Mom)")
+
+# 2) Grab [[1]] monthly 
+mom_raw.df <- mom_raw$subsets$data[[1]] 
+
+# convert to xts
+mom_raw.df$date <- as.yearmon(as.character(mom_raw.df$date), format = "%Y%m")
+mom.xts <- xts(
+  mom_raw.df[, "Mom" ],   # drop the date column
+  order.by = as.Date(mom_raw.df$date)                 # month index
+)
+
+# convert from "1926-07-01" to "Jul 1926" 
+index(mom.xts) <- as.yearmon(index(mom.xts))  # match by year-month
+
+#############################
+# January 1997 to December 2025
+
+id5.xts <- id5.xts["1997-01/2025-12"]
+
+ff3.xts <- ff3.xts["1997-01/2025-12"]
+
+mom.xts <- mom.xts["1997-01/2025-12"]
+
+# unrestricted multi-factor
+ff4f.fit <- lm(id5.xts$Cnsmr-ff3.xts$rf~ff3.xts$mkt_excess+ff3.xts$smb+
+                 ff3.xts$hml+mom.xts)
+summary(ff4f.fit)
+
+```
+
+2.  Test the hypothesis that $\alpha =0$ and interpret the outcome of the test. \smallskip
+
+\textcolor{bondiblue}{Answer in context}
+
+3.  Conduct a hypothesis test that the SMB factor is statistically significant. \smallskip
+
+\textcolor{bondiblue}{Answer in context}
+
+4.  Test the hypothesis that the residuals display no serial correlation against the alternative that they are serially correlated. Also look at the ACF (save the \textbf{Correlogram.R} file into your project) of the residuals. Is the market efficient?\smallskip
+
+\textcolor{bondiblue}{Refer to the }[Diagnostic test handout](https://learning.monash.edu/mod/resource/view.php?id=5163926)\textcolor{bondiblue}{. Here we are doing a test for serial correlation. It is assumed that all prior information in the market has been accounted for (that is, the EMH holds), so there should be no time dependence in the regression.}
+
+\textcolor{bondiblue}{We have not been told what order of serial correlation to test for. Since the data is monthly, testing for up to order 12 is sensible.}
+
+\newpage
+
+\textcolor{bondiblue}{The auxiliary regression is:}
+
+\textcolor{bondiblue}{$$\hat{\epsilon_{t}}=\beta_{0}+\beta_{1}MKT-RF_{t}+\beta_{2}SMB_{t}+\beta_{3}HML_{t}+\beta_{4}MOM_{t}$$} \textcolor{bondiblue}{$$+\gamma_{0}+\gamma_{1}\hat{\epsilon}_{t-1}+\gamma_{2}\hat{\epsilon}_{t-2}+\ldots +\gamma_{12}\hat{\epsilon}_{t-12}+v_{t}$$}
+
+\textcolor{bondiblue}{We test $H_0:\gamma_i=0,\text{ for }i=1,\ldots ,12$ against $H_1 :\text{at least one }\gamma_i\neq 0\text{ for }i=1,\ldots ,12.$}
+
+\textcolor{bondiblue}{Run the code below.}
+
+```{r, eval=FALSE}
+# change eval = TRUE to run code when you render!
+# Serial Correlation LM-test
+lmtest::bgtest(ff4f.fit, order = 12, type = "Chisq")
+```
+
+\textcolor{bondiblue}{The test Statistic is $W=nR^{2},$ which has a $\chi_{12}^2$ distribution under $H_0$. The calculated value is ??? with a p-value of ???. We ??? and conclude that ???. The market is ???.}
+
+\textcolor{bondiblue}{We can also use a correlogram to do this test informally. Use the code below to obtain the ACF of the residuals (this will use the function in the \textbf{Correlogram.R} file.}
+
+```{r, eval = FALSE}
+# change eval = TRUE to run code when you render!
+
+# correlogram of residuals
+
+source("Correlogram.R")
+
+res <- residuals(ff4f.fit) 
+correlogram(res, max.lag = 10,fit = ff4f.fit)
+```
+
+\textcolor{bondiblue}{Answer}
+
+\textcolor{bondiblue}{Extra answer}
+
+5.  Conduct a test that the residuals display homoskedasticity against the alternative that they are heteroskedastic. \smallskip
+
+\textcolor{bondiblue}{Here we will do White's test in R. You would need to write out the auxiliary regression, the null and alternative and the form and distribution of the test statistic under the null in an assignment. These are given in the Diagnostic test handout, and is similar to the answer above. Here we will just get the R output.}
+
+\textcolor{bondiblue}{Run the code below.}
+
+```{r, eval = FALSE}
+# change eval = TRUE to run code when you render!
+
+
+# white test, 
+ # include cross products and squares
+ # manually compute
+ # I(.) is important because it tells R to treat ^2 as arithmetic 
+ # (x1+x2)^2 gives x1, x2 and their cross product
+ 
+white_aux <- lm(I(res^2) ~ 
+                  (ff3.xts$mkt_excess+ff3.xts$smb+ff3.xts$hml+mom.xts)^2 +
+                  I(ff3.xts$mkt_excess^2)+I(ff3.xts$smb^2)+I(ff3.xts$hml^2)+
+                  I(mom.xts^2))
+ summary(white_aux)
+ 
+ white.test = summary(white_aux)$r.squared * nobs(white_aux)
+ white.test
+ 
+ # This white.test has a chi-square distribution and the df equals the number
+ # of regressors in the auxiliary regression excluding the constant 
+ # (i.e., the number of slope coefficients being tested jointly).
+ # beta1 = beta2 = ... = betak
+ 
+ # Find the df = k-1
+  dfw <- length(coef(white_aux)) - 1   
+ dfw
+ 
+ # Calculate the p-value
+ pval <- 1 - pchisq(white.test, dfw)
+ pval
+```
+
+\textcolor{bondiblue}{The test statistic is $W=nR^{2}$. This has a $\chi_{14}^2$ distribution under $H_0$. The calculated value is ??? with a p-value of ???. We would ???.}
+
+\textcolor{bondiblue}{This means that ???.}

@@ -1,0 +1,260 @@
+---
+title: "Week 3 Tutorial"
+format: 
+       html:
+        papersize: A4
+editor: visual
+
+execute:
+  message: false
+  eval: false
+  warning: false
+---
+
+\definecolor{awesome}{rgb}{1.0,0.13,0.32}
+\definecolor{bondiblue}{rgb}{0.0,0.58,0.71}
+
+### Introduction
+
+This workshop will help further familiarise yourself with using RStudio to obtain values relating to moments of random variables. These exercises are good practice for later workshops when you will be analysing the statistical properties of stock returns.
+
+Download the \textcolor{bondiblue}{\textbf{Tutorial Week 3.qmd}} and the 2 Excel files from Moodle and save them into your project directory.
+
+The libraries we will use are included in the code chunk below.
+
+```{r}
+library(tseries) #needed for JB test
+```
+
+**Set eval to true in the YAML above**
+
+**Question A:** The Excel file \textcolor{bondiblue}{file1\_rand.xlsx} contains observations on three random variables. Use the code below to load the data into RStudio and then construct the histogram for each of the variables. Comment on the shape of each of the distributions. Are the distributions centered over their mean, are the tails relatively thick?
+
+```{r, echo = TRUE}
+file1 <- readxl::read_excel("file1_rand.xlsx")
+
+X1 <- file1$X1
+X2 <- file1$X2
+X3 <- file1$X3
+
+
+# Plot 3 histograms in one row
+par(mfrow = c(1, 3))
+
+hist(X1, main = "Histogram of X1", xlab = "X1 values", 
+     col = "skyblue", border = "black")
+hist(X2, main = "Histogram of X2", xlab = "X2 values", 
+     col = "salmon", border = "black")
+hist(X3, main = "Histogram of X3", xlab = "X3 values", 
+     col = "lightgreen", border = "black")
+
+# Reset layout
+par(mfrow = c(1, 1))
+
+```
+
+*Answer here*
+
+**Question B:** Using the observed data, obtain descriptive statistics for each random variable. Test for Normality using the JB test.
+
+Note that we can adapt our code from last week to answer this question.
+
+#### The Jarque-Bera (JB) test
+
+The Jarque-Bera test statistic is used to test for normality of sample data. This is done by **jointly** testing whether or not the skewness and kurtosis are sufficiently different from the values of the normal distribution, which are 0 and 3, respectively.
+
+Recall that $\bar{\mu}_{3}^{s}$ measures skewness of a random variable and $\bar{\mu}_{4}^{s}$ measures excess kurtosis. So the JB test can be also thought of as testing if both skewness and **EXCESS** kurtosis equal 0 (since excess kurtosis is kurtosis - 3).
+
+Let $\hat{\bar{\mu}}_{3}^{s}$ and $\hat{\bar{\mu}}_{4}^{s}$ denote the corresponding sample estimates of skewness and kurtosis. Then, the form of the Jarque-Bera test statistic is $$\text{JB}=\frac{n}{6}\left( (\hat{\bar{\mu}}_{3}^{s}-0)^{2}+\frac{\left( 
+\hat{\bar{\mu}}_{4}^{s}-3\right) ^{2}}{4}\right)$$ where $n$ is the sample size. The sampling distribution of the JB statistic is asymptotically chi-squared with two degrees of freedom, (which we denote as $\chi _{2}^{2}$) if the data are Normally distributed (*i.e.* under $H_0$, or assuming that $H_0$ is true). Given these facts, we can then conduct a test for normality using the following steps:
+
+1.  $H_{0}:\text{ The sample data are normal}$ versus $H_{1}:\text{ The sample data are NOT normal}$
+
+2.  Test statistic: $\text{JB}=\frac{n}{6}\left((\hat{\bar{\mu}}^s_3-0)^2+\frac{\left(\hat{\bar{\mu}}^s_4-3\right)^2}{4}\right) \overset{asy}{\sim}\chi _{2}^{2}\text{ under }H_{0}$
+
+3.  Decision Rule: Reject $H_0$ at the $\alpha$ significance level if the p-value $<\alpha$.
+
+4.  Conclusion: Do or do not reject $H_0$ and conclude that:
+
+-   there is evidence of a non-normal distribution (if we reject), or
+-   there is insufficient evidence of a non-normal distribution (if we do not reject).
+
+\begingroup
+
+\fontspec{Calibri}\textbf{\textcolor{red}{WE NEVER SAY ACCEPT $H_0$, OR ACCEPT $H_1$}}
+
+\fontspec{Calibri}\textbf{\textcolor{red}{WE NEVER SAY THAT $H_0$ IS TRUE, OR THAT $H_1$ IS TRUE}}
+
+\endgroup
+
+We will use the above testing framework to determine whether or not each of the variables in are normally distributed (*i.e.* to do the JB test).
+
+\textcolor{awesome}{Descriptive statistics for all 3 variables:}
+
+```{r}
+na_rm <- TRUE
+
+stats_df <- data.frame(
+  Statistic = c("Mean", "Median", "Maximum", "Minimum", "Std_Dev",
+                "Skewness", "Excess Kurtosis","Obs"),
+  X1 = c(
+    mean(X1, na.rm = na_rm),
+    median(X1, na.rm = na_rm),
+    max(X1, na.rm = na_rm),
+    min(X1, na.rm = na_rm),
+    sd(X1, na.rm = na_rm),
+    PerformanceAnalytics::skewness(X1, na.rm = na_rm),
+    PerformanceAnalytics::kurtosis(X1, na.rm = na_rm), 
+    length(X1)
+  ),
+  X2 = c(
+    mean(X2, na.rm = na_rm),
+    median(X2, na.rm = na_rm),
+    max(X2, na.rm = na_rm),
+    min(X2, na.rm = na_rm),
+    sd(X2, na.rm = na_rm),
+    PerformanceAnalytics::skewness(X2, na.rm = na_rm),
+    PerformanceAnalytics::kurtosis(X2, na.rm = na_rm), 
+    length(X2)
+  ),
+  X3 = c(
+    mean(X3, na.rm = na_rm),
+    median(X3, na.rm = na_rm),
+    max(X3, na.rm = na_rm),
+    min(X3, na.rm = na_rm),
+    sd(X3, na.rm = na_rm),
+    PerformanceAnalytics::skewness(X3, na.rm = na_rm),
+    PerformanceAnalytics::kurtosis(X3, na.rm = na_rm), 
+    length(X3)
+  ),
+  row.names = NULL,
+  check.names = FALSE
+)
+
+# Optional rounding
+
+stats_df$X1 <- round(stats_df$X1, 4)
+stats_df$X2 <- round(stats_df$X2, 4)
+stats_df$X3 <- round(stats_df$X3, 4)
+
+
+stats_df
+```
+
+*Answer here*
+
+```{r}
+jb_x1 <- jarque.bera.test(X1)
+jb_x2 <- jarque.bera.test(X2)
+jb_x3 <- jarque.bera.test(X3)
+
+JB_df <- data.frame(
+  Statistic = c("JB Calc", "df", "p-value"),
+  X1 = c(
+    jb_x1$statistic,
+    jb_x1$parameter,
+    jb_x1$p.value
+ ),
+ X2 = c(
+    jb_x2$statistic,
+    jb_x2$parameter,
+    jb_x2$p.value
+ ),
+ X3 = c(
+    jb_x3$statistic,
+    jb_x3$parameter,
+    jb_x3$p.value
+ ),
+  row.names = NULL,
+  check.names = FALSE
+)
+
+# Rounding
+
+JB_df$X1 <- round(JB_df$X1, 4)
+JB_df$X2 <- round(JB_df$X2, 4)
+JB_df$X3 <- round(JB_df$X3, 4)
+
+JB_df
+
+```
+
+all three tests p-value = 0. Since p-value \< a we reject the null.
+
+**Question C:** Recall that, for $s$ the estimated standard deviation and $\bar{X}$ the estimated mean, we can conduct a hypothesis test that the population mean is equal to some value $c$, against the alternative that $\mu \neq c$. Recall that:
+
+$$\bar{X}\sim N\left(\mu, \frac{s^2}{n}\right)$$
+
+This is accomplished using the following steps:
+
+1.  $H_0:\mu=c$ versus $H_1:\mu\neq c$
+
+2.  Test statistic: $t=(\bar{X}-c)/(s/\sqrt{n})\sim t_{n-1}$ under $H_0$, where $n$ is the sample size.
+
+3.  Decision Rule: Reject $H_0$ at the $\alpha$ significance level if $|t|\geq t_{n-1}(\alpha)$, where $t_{n-1}(\alpha)$ is the corresponding $\alpha$ critical value of the Student's t-distribution with degree of freedom parameter $n-1$.
+
+4.  Conclusion: Do or do not reject $H_0$
+
+For each of the variables in \textcolor{blue}{file1\_rand.xslx}, test the null hypothesis $H_{0}:\mu =0$, against the two-sided alternative.
+
+*There are three ways to do this.*
+
+1.  *Critical value*
+
+2.  *p-value*
+
+3.  *regression*
+
+*In approaches 1 and 2, we need to use R to calculate the t value (*$t_{calc}$*). Approach 3 is a shortcut.*
+
+*We would only use one of these methods in an assignment.*
+
+\textcolor{awesome}{We will do all 3 for the X1 variable - practice adpating the code to perform all 3 tests for X2 and X3.}
+
+\textcolor{awesome}{\textbf{1. Critical value approach}}
+
+\textcolor{awesome}{We will use the mean, standard deviation and the number of observations to create a scalar (single number) that is the calculated t-value.}
+
+```{r}
+# t-calculated for X1
+
+c0 = 0 #The hypothesised value of mu
+n  <- length(X1) # number of observations
+xbar.x1 <- mean(X1)
+s.x1  <- sd(X1)
+
+
+t_calc.x1 <- (xbar.x1 - 0) / (s.x1 / sqrt(n))
+t_calc.x1
+```
+
+```{r}
+dfree  <- n - 1 #degrees of freedom
+
+# critical value approach
+tcrit <- qt(0.025, dfree, 0)
+
+tcrit
+```
+
+*Answer here*
+
+\textcolor{awesome}{\textbf{2. p-value approach:}}
+
+```{r}
+p_value <- pt(-abs(t_calc.x1), df = dfree) * 2
+p_value
+```
+
+*Do not reject the null*
+
+\textcolor{awesome}{\textbf{3. Regression on a constant:}}
+
+\textcolor{awesome}{As we know, a regression give us an estimate of the mean of $Y$ for a given value of $X$. If there is no $X$ and we regress just on the constant, we will get the mean of $Y$.}
+
+```{r}
+fit.x1 <- lm(X1~1, data = file1)
+summary(fit.x1)
+```
+
+*Answer here*

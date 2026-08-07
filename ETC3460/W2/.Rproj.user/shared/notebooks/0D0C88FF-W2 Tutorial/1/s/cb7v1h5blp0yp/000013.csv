@@ -1,0 +1,4 @@
+"0","# Read Excel"
+"0","nasdaq.df <- readxl::read_excel(""NASDAQ_2024.xlsx"")   "
+"0",""
+"0","plot(nasdaq.df$Close)"

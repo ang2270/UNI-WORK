@@ -1,0 +1,280 @@
+---
+title: "Week 2 Tutorial"
+format: pdf
+editor: visual
+
+execute:
+  warning: false
+  message: false
+  echo: true
+  eval: true
+---
+
+Students: change eval: to true
+
+## Introduction
+
+This tutorial will help re-familiarize yourself with R and .qmd files. The goals for the tutorial are:
+
+-   to show you how to convert external data into a format that we will use this semester
+-   to create visualisations and tables to interpret this data
+
+We will also provide examples of the code - you need to become familiar with the coding and understand what it does. If you wish to enhance this code, then feel free. We will also utilise functions occasionally, so you will also need to understand how these work. ***This is not a coding unit***, but in order to understand what we are doing, you need to take the time to scrutinise and understand the provided code so that you can adapt it for your assessments.
+
+## Beginning
+
+The data and .qmd file for this workshop can be found in Moodle under the tab for
+
+***Week 2: Real Time***.
+
+We want you to **USE PROJECTS!!** This makes your R life easier.
+
+### Set-up
+
+On your computer, create a directory (for example ETC3460S1) and then a sub-directory (*e.g.* W2).
+
+\textcolor{red}{This is where you will save the tutorial material for today. Next week, you will create a W3 folder, and save everything in there, and so on for the rest of the semester.}
+
+*NOTE: Clicking on the link in Moodle will save to your downloads folder - you need to either save directly to your W2 folder, or cut and paste from the downloads folder into the W2 folder.*
+
+*If you download the folder into a zip file, you must extract the files into the W2 directory. RStudio cannot access zip files.*
+
+*Your data* ***MUST*** *be in the same folder as your .qmd file*
+
+Now we are ready to set up our project in RStudio.
+
+-   Open RStudio and create a new project.
+
+-   Select an existing Directory, and use the Browse button to find your **ETC3460S1** folder
+
+-   Click OK and you have a new project. You should be able to see the W2 directory in the File window in RStudio.
+
+-   Here are links to the **StartR** modules for Projects and Quarto for your reference:
+
+-   [Projects and paths](https://startr.numbat.space/modules/starter/project-structure/)
+
+-   [Quarto basics](https://startr.numbat.space/modules/writing/quarto-basics/)
+
+### Download the Tutorial materials
+
+-   Save the files from Moodle into your **ETC3460S1/W2** folder
+
+-   In the file window (on the lower right in RStudio), you should be able to see both the Nasdaq file and the qmd file
+
+-   Open the .qmd file in RStudio - we will work through this today, and you will fill in the gaps with your answers.
+
+## Question One
+
+**1).** The NASDAQ_2024.xlsx data file contains daily data on the price of the NASDAQ stock market index in 2024. Use the code below to plot the time-series of the close price. Do you notice any issues with the plot?
+
+```{r}
+# Read Excel
+nasdaq.df <- readxl::read_excel("NASDAQ_2024.xlsx")   
+
+plot(nasdaq.df$Close)
+```
+
+\smallskip
+
+**2).** Install the **xts** package in R (in the lower right pane, click: *packages-install*, then type xts). We only need to install this once, but we need to "call" it every week - so we will always use this library.
+
+*It is generally a good idea to create a code chunk at the beginning of your qmd file that contains all of the libraries you use to create that document.*
+
+**a)** Use the **xts** package to plot the close price again. Is this better? Also plot the open price.
+
+```{r}
+# daily observations from 21 Feb 2023 to 16 Feb 2024
+library(xts)
+nasdaq.xts <- as.xts(nasdaq.df)
+
+plot(nasdaq.xts$Close, main = "bla")
+
+plot(nasdaq.xts$Open, main = "bla")
+```
+
+**b)** Use the code below to create histograms for the open and close prices.
+
+```{r}
+     # histogram for Open
+hist(nasdaq.xts$Open,
+     breaks = 30,
+     main = "Histogram",
+     xlab = colnames(nasdaq.xts)[1])  # column name
+
+```
+
+```{r}
+# histogram for Close
+hist(nasdaq.xts$Close,
+     breaks = 30,
+     main = "Histogram",
+     xlab = colnames(nasdaq.xts)[4]) # column name
+
+```
+
+\smallskip
+
+**c)** Use the code below to obtain descriptive statistics.
+
+```{r}
+y <- nasdaq.xts$Open
+y <- as.numeric(y)  # ensure it's a numeric vector
+
+
+x <- nasdaq.xts$Close
+x <- as.numeric(x)  # ensure it's a numeric vector
+na_rm <- TRUE
+
+
+stats_df <- data.frame(
+  Statistic = c("Mean", "Median", "Maximum", "Minimum", "Std_Dev",
+                "Skewness", "Excess Kurtosis","Obs"),
+  Open_Price = c(
+    mean(y, na.rm = na_rm),
+    median(y, na.rm = na_rm),
+    max(y, na.rm = na_rm),
+    min(y, na.rm = na_rm),
+    sd(y, na.rm = na_rm),
+    PerformanceAnalytics::skewness(y, na.rm = na_rm),
+    PerformanceAnalytics::kurtosis(y, na.rm = na_rm), 
+    # this is *excess* kurtosis in PA
+    length(y)
+  ),
+  Close_Price = c(
+    mean(x, na.rm = na_rm),
+    median(x, na.rm = na_rm),
+    max(x, na.rm = na_rm),
+    min(x, na.rm = na_rm),
+    sd(x, na.rm = na_rm),
+    PerformanceAnalytics::skewness(x, na.rm = na_rm),
+    PerformanceAnalytics::kurtosis(x, na.rm = na_rm), 
+    # this is *excess* kurtosis in PA
+    length(x)
+  ),
+  
+  row.names = NULL,
+  check.names = FALSE
+)
+
+# Optional rounding
+
+stats_df$Open_Price <- round(stats_df$Open_Price, 4)
+stats_df$Close_Price <- round(stats_df$Close_Price, 4)
+
+stats_df
+
+```
+
+**3).** Discuss the histograms and descriptive statistics. Are the descriptive statistics meaningful in these examples?
+
+\smallskip
+
+\newpage
+
+**4).** Using the code below, generate log returns for the Close price.
+
+```{r}
+# log return for Close
+logret <- diff(log(nasdaq.xts$Close))  # base R
+logret <- na.omit(logret)   # removes the first NA created by diff()
+```
+
+\smallskip
+
+**5).** Now plot the log-return series. Does this look better?
+
+```{r}
+plot(logret,main = "log return")
+```
+
+\smallskip
+
+**6).** Use the code below to generate a histogram and tabulate the Descriptive Statistics for the log-returns.
+
+```{r}
+hist(logret,
+     breaks = 30,
+     main = "Histogram",
+     xlab = "Log returns for Nasdaq close price") 
+```
+
+```{r}
+z <- logret
+z <- as.numeric(z)  # ensure it's a numeric vector
+na_rm <- TRUE
+
+
+lret_df <- data.frame(
+  Statistic = c("Mean", "Median", "Maximum", "Minimum", "Std_Dev",
+                "Skewness", "Excess Kurtosis", "Obs"),
+  Log_Returns = c(
+    mean(z, na.rm = na_rm),
+    median(z, na.rm = na_rm),
+    max(z, na.rm = na_rm),
+    min(z, na.rm = na_rm),
+    sd(z, na.rm = na_rm),
+    PerformanceAnalytics::skewness(z, na.rm = na_rm),
+    PerformanceAnalytics::kurtosis(z, na.rm = na_rm),
+    # this is *excess* kurtosis in PA
+    length(z)
+  ),
+  
+  row.names = NULL,
+  check.names = FALSE
+)
+
+# Optional rounding
+
+lret_df$Log_Returns <- round(lret_df$Log_Returns, 4)
+
+
+lret_df
+```
+
+\smallskip
+
+**7).** We would like to see if the distribution is close to Normal. So we test if the skewness AND the Excess Kurtosis = 0. We can do this using the Jarque-Bera test (\*install the `tseries` package).
+
+```{r}
+# Jarque Bera for log return
+library(tseries)
+jb_open <- jarque.bera.test(logret)
+
+jb_df <- data.frame(
+  Value = c(
+    as.numeric(jb_open$statistic),  # JB Stat
+    jb_open$p.value                 # p-value
+  ),
+  row.names = c("JB Stat", "p-value"),
+  check.names = FALSE
+)
+
+# Optional formatting
+jb_df$Value <- signif(jb_df$Value, 4)
+
+jb_df
+
+```
+
+\smallskip
+
+**8).** We know that the log return series is stationary, which means that we can run regressions on this series. Let's estimate the AR(1) model $$y_t = c +\phi_1y_{t-1}+\epsilon_t,$$ where $y_t$ is the log return of the Nasdaq close price.
+
+Use the code below to run an AR(1) regression on log returns.
+
+*(One drawback of using xts data is that common tidy functions don't work. We can estimate a regression, but first we need to create a data frame which has a dependent and independent variable).*
+
+```{r}
+y  <- logret # y is xts
+y1 <- lag(y, k = 1)   # y1 is xts, first observation is NA
+
+lret <- na.omit(merge(y, y1))  # remove the first observation
+#lret is our regression data now
+
+colnames(lret) <- c("y", "y_lag1") 
+
+# the regression function lm needs variable names
+
+fit_ar1 <- lm(y ~ y_lag1, data = lret)
+summary(fit_ar1)
+```

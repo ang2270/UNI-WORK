@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>A2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="A2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="A2_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="A2_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="A2_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="A2_files/libs/quarto-html/popper.min.js"></script>
+<script src="A2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="A2_files/libs/quarto-html/anchor.min.js"></script>
+<link href="A2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="A2_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="A2_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="A2_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="A2_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">A2</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>library(xts) library(quantmod) options(“getSymbols.warning4.0”=FALSE) getSymbols(Symbols = c(“GOOG”), from=“2016-02-05”, to=“2026-03-27”, auto.assign=TRUE, warnings=FALSE)</p>
+<section id="convert-to-daily" class="level1">
+<h1>convert to daily</h1>
+<p>GOOG_D_P = to.daily(GOOG$GOOG.Adjusted, OHLC=FALSE)</p>
+</section>
+<section id="log-return" class="level1">
+<h1>log return</h1>
+<p>lr = na.omit(diff(log(GOOG_D_P)))</p>
+</section>
+<section id="in-percentages" class="level1">
+<h1>In percentages</h1>
+<p>lr = lr * 100 colnames(lr) &lt;- c(“GOOG_Daily_returns_%”) head(lr)<br>
+tail(lr)</p>
+<p>signf = 0.05</p>
+</section>
+<section id="q1" class="level1">
+<h1>Q1</h1>
+</section>
+<section id="a-report-the-autocorrelations-through-lag-10-for-the-squared-log-returns.-what-do-these" class="level1">
+<h1>a) Report the autocorrelations through lag 10 for the squared log returns. What do these</h1>
+</section>
+<section id="autocorrelations-tell-you-about-the-time-series-properties-of-goog-returns" class="level1">
+<h1>autocorrelations tell you about the time-series properties of GOOG returns?</h1>
+<p>The results tell us that there is quite weak auto correlation of returns, with levels around 0.1 - 0.15, it cannot be said there is insignificant correlation with yesterdays return and today’s return but it is not close to 1. As well due to the relatively slow decay in values it appears to be none stationary</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># correlogram of residuals</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"Correlogram.R"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">correlogram</span>(lr<span class="sc">^</span><span class="dv">2</span>, <span class="at">max.lag =</span> <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="b-using-the-log-return-series-estimate-both-an-ar1-and-an-ar2-specification-for" class="level1">
+<h1>b) Using the log-return series, estimate both an AR(1) and an AR(2) specification for</h1>
+</section>
+<section id="the-returns.-compare-the-two-ötted-models-and-choose-the-specification-that-you" class="level1">
+<h1>the returns. Compare the two Ötted models and choose the specification that you</h1>
+</section>
+<section id="consider-more-appropriate.-in-your-answer-brifly-explain-the-evidence-supporting" class="level1">
+<h1>consider more appropriate. In your answer, brifly explain the evidence supporting</h1>
+</section>
+<section id="your-choice." class="level1">
+<h1>your choice.</h1>
+<p>fit_ar1 &lt;- arima(as.numeric(lr), order = c(1, 0, 0), include.mean = TRUE) fit_ar1 fit_ar2 &lt;- arima(as.numeric(lr), order = c(2, 0, 0),include.mean = TRUE) fit_ar2</p>
+<p>aic_table &lt;- data.frame( Model = c(“AR(1)”, “AR(2)”), AIC = c( fit_ar1<span class="math inline">\(aic,
+    fit_ar2\)</span>aic ) )</p>
+<p>aic_table</p>
+<p>In ar(1) model we get a value of -0.0581 for phi1 and an aic = 10220.32 In the ar(2) model we get phi1 = -0.0580, phi2 = 0.0026, aic = 10222.30 therefore I conclude whilst both models are extremely close in AIC values, ar(1) is ~ 2 less and therefore it is more advantageous to choose Ar(1) as its estimator of prediction error is lower than ar(2).</p>
+</section>
+<section id="c-for-your-chosen-model-in-part-b-conduct-an-arch-test-with-p-5-lags.-what" class="level1">
+<h1>c) For your chosen model in part b, conduct an ARCH test with p = 5 lags. What</h1>
+</section>
+<section id="conclusion-do-you-draw" class="level1">
+<h1>conclusion do you draw?</h1>
+<p>LM Test for 5’th order ARCH effects <strong>LM Test for <span class="math inline">\(5\)</span>-th order ARCH effects</strong></p>
+<p>This is a test for ARCH in levels (conducted at a 5% significance level)</p>
+<p><strong>Hypotheses:</strong> <span class="math display">\[H_0: \text{cov}(\epsilon^2_t, \epsilon^2_{t-j}) = 0, \text{ for } j \neq 0\]</span> <span class="math display">\[H_1: \text{at least one } \text{cov}(\epsilon^2_t, \epsilon^2_{t-j}) \neq 0\]</span></p>
+<p><strong>Auxiliary Regression with <span class="math inline">\(p = 5\)</span>:</strong> <span class="math display">\[\hat{\epsilon}^2_t = \gamma_0 + \gamma_1 \hat{\epsilon}^2_{t-1} + \gamma_2 \hat{\epsilon}^2_{t-2} + \gamma_3 \hat{\epsilon}^2_{t-3} + \gamma_4 \hat{\epsilon}^2_{t-4} + \gamma_5 \hat{\epsilon}^2_{t-5} + v_t\]</span> <strong>Tested Hypothesis:</strong> <span class="math display">\[H_0: \gamma_i = 0, \text{ for all } i = 1, 2,3,4,5 \, \]</span> <span class="math display">\[H_1: \text{at least one } \gamma_i \neq 0, \text{ for } i = 1,2,3,4,5 \, \]</span></p>
+<p><strong>Test Statistic:</strong> <span class="math display">\[W = nR^2\]</span> where <span class="math inline">\(n\)</span> is the sample size and <span class="math inline">\(R^2\)</span> is the R-squared of the auxiliary regression.</p>
+<p><strong>Distribution under the Null:</strong> <span class="math inline">\(W\)</span> has a <span class="math inline">\(\chi^2_p\)</span> distribution if <span class="math inline">\(H_0\)</span> is true. # Residuals: res_d &lt;- residuals(fit_ar1) # Test:</p>
+<p>FinTS::ArchTest(res_d, lags = 5)</p>
+<p>The test yeilded a W = 133.56, with 5 degrees of freedom and a p-value &lt; 2.2*10^16 with a p-value &lt; 0.05, we reject the null. this suggests that there is strong statistical evidence that the series has presence of conditional heteroskedasticity (ARCH effects) up to order 5 in the residuals of the AR(1) model.</p>
+</section>
+<section id="d-add-an-arch3-component-to-your-chosen-mean-equation-from-part-b-and-reestimate-the-model-use-a-normal-error-distribution." class="level1">
+<h1>d) Add an ARCH(3) component to your chosen mean equation from part b and reestimate the model (use a normal error distribution).</h1>
+</section>
+<section id="comment-on-the-coefficient-estimates-in-the-variance-equation" class="level1">
+<h1>Comment on the coefficient estimates in the variance equation</h1>
+<p>library(rugarch) spec_ar1_arch3 &lt;- ugarchspec( variance.model = list( model = “sGARCH”, # standard GARCH garchOrder = c(3, 0) # ARCH(3) ), mean.model = list( armaOrder = c(1, 0), include.mean = TRUE ), distribution.model = “norm” )</p>
+</section>
+<section id="model-result" class="level1">
+<h1>model result</h1>
+<p>fit_arma1_arch3d &lt;- ugarchfit( spec = spec_ar1_arch3, data = lr )</p>
+<p>fit_arma1_arch3d@fit$matcoef</p>
+<p>The AR(1) mean equation with an ARCH(3) variance process and standard normal errors is defined as: <span class="math display">\[r_t = \mu + \phi_1 r_{t-1} + \epsilon_t\]</span><span class="math display">\[\
+epsilon_t \sim N(0, \sigma^2_t)\]</span> <span class="math display">\[\sigma^2_t = \omega + \alpha_1 \epsilon^2_{t-1} + \alpha_2 \epsilon^2_{t-2} + \alpha_3 \epsilon^2_{t-3}\]</span></p>
+<p>The resulting equation from the model is: Mean Equation:<span class="math display">\[r_t = 0.0979 - 0.0278 r_{t-1} + \epsilon_t\]</span></p>
+<p>Variance Equation:<span class="math display">\[\sigma^2_t = 2.0046 + 0.1348 \epsilon^2_{t-1} + 0.0799 \epsilon^2_{t-2} + 0.1924 \epsilon^2_{t-3}\]</span> From the estimated model with an ARCH(3) component added, all p-values for alpha’s 1,2,3 are &gt; 0.05 suggesting they are highly statistically significant with values ~ 1.79 <em>10^-5, 8.85 </em>10^-4, 3.77 *10^-8 respectively. All values are also &gt;0 satisfying the positive conditional variances requirement.</p>
+</section>
+<section id="e-run-a-garch11-model-and-comment-on-its-coefficient-estimates" class="level1">
+<h1>e) Run a GARCH(1,1) model and comment on its coefficient estimates</h1>
+<p>garch1_spec &lt;- ugarchspec( variance.model = list(model = “sGARCH”, garchOrder = c(1, 1)), mean.model = list(armaOrder = c(1, 0), include.mean = TRUE), distribution.model = “norm”<br>
+)</p>
+<p>garch_fit &lt;- ugarchfit(spec = garch1_spec, data = lr) garch_fit@fit$matcoef</p>
+<p>This is ran using normal distribution of errors. The GARCH(1,1) conditional variance equation is defined as:<span class="math display">\[\sigma^2_t = \omega + \alpha_1 \epsilon^2_{t-1} + \beta_1 \sigma^2_{t-1}\]</span> Substituting the estimated values into the GARCH(1,1) variance equation yields:<span class="math display">\[\sigma^2_t = 0.0443 + 0.0426 \epsilon^2_{t-1} + 0.9444 \sigma^2_{t-1}\]</span> From this the parameter estimates are all strictly positive and have p-values &lt; 0.05 suggesting they are highly statistically significant. The sum of ARCH and GARCH coefficients = 0.9870, very close to 1, as such the series exhibits high volatility persistence, indicating market shocks to Google returns have a long-lasting impact on the assets conditional variance with slow decay over time.</p>
+</section>
+<section id="f-determine-whether-the-arch3-or-garch11-model-provides-the-better-fit-to-the" class="level1">
+<h1>f) Determine whether the ARCH(3) or GARCH(1,1) model provides the better fit to the</h1>
+</section>
+<section id="data-using-the-same-mean-equation-as-in-part-b.-clearly-state-the-statistics-that" class="level1">
+<h1>data, using the same mean equation as in part b. Clearly state the statistics that</h1>
+</section>
+<section id="you-use-and-present-all-required-steps." class="level1">
+<h1>you use and present all required steps.</h1>
+<p>ic_arch3 &lt;- infocriteria(fit_arma1_arch3d) ic_garch11 &lt;- infocriteria(garch_fit) ic_comparison &lt;- data.frame( Metric = rownames(ic_arch3), ARCH_3 = as.numeric(ic_arch3), GARCH_1_1 = as.numeric(ic_garch11) )</p>
+<p>The GARCH(1,1) model provides a superior fit to the data compared to the ARCH(3) model. The AIC for the GARCH(1,1) specification (<span class="math inline">\(3.8903\)</span>) is strictly lower than that of the ARCH(3) specification (<span class="math inline">\(3.9318\)</span>), the lower value dictates that the GARCH(1,1) model minimizes information loss and is the preferred specification. Additionally it has a lower bayseian information criterion, values “Bayes” in the table. Furthermore we can test for left-over ARCH using standardized residuals for the GARCH model.</p>
+</section>
+<section id="q2" class="level1">
+<h1>Q2</h1>
+</section>
+<section id="q3" class="level1">
+<h1>Q3</h1>
+</section>
+<section id="a-b" class="level1">
+<h1>a &amp; b</h1>
+<p>start_date &lt;- “2015-12-01” end_date &lt;- “2025-12-31” tickers &lt;- c(“VBK”, “VB”, “VBR”, # Small: growth, blend, value “VOT”, “VO”, “VOE”, # Mid: growth, blend, value “VUG”, “VV”, “VTV”) # Large: growth, blend, value getSymbols(tickers, src = “yahoo”, from = start_date, to = end_date)</p>
+<p>vbk.m.p = to.monthly(VBK<span class="math inline">\(VBK.Adjusted, OHLC = FALSE)
+vb.m.p  = to.monthly(VB\)</span>VB.Adjusted, OHLC = FALSE) vbr.m.p = to.monthly(VBR$VBR.Adjusted, OHLC = FALSE)</p>
+<p>vot.m.p = to.monthly(VOT<span class="math inline">\(VOT.Adjusted, OHLC = FALSE)
+vo.m.p  = to.monthly(VO\)</span>VO.Adjusted, OHLC = FALSE) voe.m.p = to.monthly(VOE$VOE.Adjusted, OHLC = FALSE)</p>
+<p>vug.m.p = to.monthly(VUG<span class="math inline">\(VUG.Adjusted, OHLC = FALSE)
+vv.m.p  = to.monthly(VV\)</span>VV.Adjusted, OHLC = FALSE) vtv.m.p = to.monthly(VTV$VTV.Adjusted, OHLC = FALSE)</p>
+<p>m.p &lt;- merge(vbk.m.p, vb.m.p, vbr.m.p, vot.m.p, vo.m.p, voe.m.p, vug.m.p, vv.m.p, vtv.m.p)</p>
+<p>colnames(m.p) &lt;- c(“VBK”, “VB”, “VBR”, “VOT”, “VO”, “VOE”, “VUG”, “VV”, “VTV”)</p>
+</section>
+<section id="log-returns" class="level1">
+<h1>Log Returns</h1>
+<p>m.lr.p = na.omit(diff(log(m.p)))*100 # sample mean mean_vec_lr &lt;- colMeans(m.lr.p)</p>
+<p>mean_box_lr &lt;- matrix(mean_vec_lr, nrow = 3, byrow = TRUE, dimnames = list(c(“Small”, “Mid”, “Large”), c(“Growth”, “Blend”, “Value”))) mean_box_lr &lt;- round(mean_box_lr, 3) cat(“3x3 Style Box: Mean Monthly Lor Return (%)”) mean_box_lr</p>
+</section>
+<section id="confidence-level-1-month-horizon" class="level1">
+<h1>95% confidence level, 1-month horizon</h1>
+<p>confidence &lt;- 0.95</p>
+<p>var_vec &lt;- apply(m.lr.p, 2, function(etf) { -quantile(etf, probs = 1 - confidence) # negative so VaR is expressed as a positive loss })</p>
+</section>
+<section id="x3-style-box-var" class="level1">
+<h1>3x3 style box: VaR</h1>
+<p>var_box &lt;- matrix(var_vec, nrow = 3, byrow = TRUE, dimnames = list(c(“Small”, “Mid”, “Large”), c(“Growth”, “Blend”, “Value”))) var_box &lt;- round(var_box, 3) cat(“3x3 Style Box: Historical VaR 95% Monthly Log Return (%)”)</p>
+<p>Answer: (a) and (b) The risk measure selected is Value at Risk (VaR) at the 95% confidence level, expressed as a percentage of portfolio value representing the monthly loss threshold. Value at Risk (VaR) is defined as the maximum loss expected to occur in no more than 5% of monthly observations over the sample period. Formally, the 95% VaR is the 5th percentile of the empirical distribution of monthly log-returns. The VaR calculation was performed using the historical 5th percentile of the monthly log-return distribution over the 120 observations, and chosen on the positive side of the distribution. (VaR % therefore expressing a negative loss amount.) I chose to show the VaR of the 9 ETF’s for the following reasons;</p>
+<p>Firstly, for risk-adverse investors its an easily understandable and important metric to understand how much one might lose in a serve market draw down. Unlike a measure like standard deviation, which treats all volatility equally, VaR highlights downside tail losses, which for risk-adverse investors serves as a conceptual benchmark to see which ETF’s offer larger drawdowns and losses, which reflects real investor preferences since investors hate losses more than they value gains,</p>
+<p>Second, VaR at the 95% confidence level provides a definitive risk metric that translates directly into decision-making: “What is the worst plausible monthly loss I should expect?” This is more intuitive for investors as they can directly see the what kind of risk drawn downs they can expect chasing higher returns, highlighting the idea of “no free lunch”.</p>
+<p>Thirdly, equity returns particularly for growth stocks—exhibit fat tails and negative skewness, meaning historical worst-case scenarios are worse than a normal distribution predict. A historical VaR approach captures these tail characteristics. This is particularly relevant for the growth-oriented ETFs (VBK, VOT, VUG) in this analysis, and is shown in the results below: var_box Despite VUG (Large Growth) having the highest mean monthly return from the workshop analysis, it carries an 8.837% VaR, meaning for a $50,000 investment, an investor could lose $4,419 worst-case in one month. In contrast, VTV (Large Value) offers a $3,270 maximum loss in the worst 5% of months, a meaningful difference for risk-averse investors.</p>
+<p>Comparing returns and risk across the ETFs reveals a nuanced risk-return relationship that broadly supports the practitioner’s caution, but with important exceptions; Within size categories, a clear positive risk-return trade-off emerges. Large-cap ETFs show returns increasing sharply across styles (Value 0.927%, Blend 1.156%, Growth 1.347%), paired with corresponding VaR increases (6.540%, 7.230%, 8.837%). Mid-cap follows this pattern (Value 0.797%, Growth 0.926%; VaR: 7.422%, 8.499%). However, small-cap presents an anomaly: returns are essentially flat (0.814%–0.836%) while VaR systematically increases with growth orientation (8.534%–9.414%), suggesting small-cap growth provides no return compensation for elevated tail risk. Within style categories, the relationship is more complex. Growth returns increase strongly with size (0.823%, 1.347%), but VaR does not increase monotonically (9.414%, 8.499%, 8.837%), meaning large-cap growth offers superior risk-adjusted returns. Critically, Blend and Value categories show inverse relationships: larger ETFs deliver both higher returns and lower risk (Blend: 0.836%→1.156% returns; 8.595%, 7.230% VaR).<br>
+This suggests size diversification reduces idiosyncratic risk without sacrificing returns. Direct comparison of VUG versus alternatives: Despite VUG’s highest mean return (1.347%), it carries 8.837% VaR. A risk-averse investor would rationally prefer VV (Large Blend), which offers 86% of VUG’s return (1.156%) while bearing only 82% of its tail risk (7.230%). Even more striking, VTV (Large Value) with 0.927% return carries merely 6.540% VaR—the lowest in the dataset.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

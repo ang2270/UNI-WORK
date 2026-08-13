@@ -139,16 +139,24 @@ function mousePosEvents() {
 function mousePosObservable() {
     // The ! tells TypeScript this is a non-null value
     const elem = document.getElementById("pos_obs")!;
-
+    
     /** Write your code after here */
 
     // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
     const source$ = fromEvent<MouseEvent>(document, "mousemove");
 
     source$
-        .pipe(IMPLEMENT_THIS) // This must be pure
-        .subscribe(IMPLEMENT_THIS); // Side effects should be contained here
-}
+        .pipe(                                        // This must be pure
+            map(({ clientX, clientY }) =>  ({ x: clientX, y: clientY })),
+        )
+        .subscribe(({ x, y }) => {                   // Side effects should be contained here
+            const Y = x + ", " + y;
+            elem.textContent = Y;
+            if (x > 400) {
+            elem.classList.add("highlight");
+            } else {
+            elem.classList.remove("highlight");
+}})}
 
 /*****************************************************************
  * Exercise 2
@@ -175,16 +183,14 @@ function animatedRect() {
     const rect = initialiseRect(startProps, "animatedRect");
 
     /** Write your code after here */
-
-    const source$ = IMPLEMENT_THIS;
+    const source$ = interval(10);
 
     const move$ = source$
         .pipe(
-            takeUntil(IMPLEMENT_THIS),
-
-            scan(IMPLEMENT_THIS),
+            takeUntil(timer(1000)),
+            scan((accumulator, _currentValue) => accumulator + 1, startProps.x)
         )
-        .subscribe((newX: IMPLEMENT_THIS) =>
+        .subscribe((newX: number) =>
             rect.setAttribute("x", String(newX)),
         );
 }
@@ -211,15 +217,16 @@ function animatedRect2() {
 
     /** Write your code after here */
 
-    const moveDownRight$ = interval(10)
+
+    const moveDownRight$ = interval(60)
         .pipe(
             // Stop taking values after some amount of time
-            IMPLEMENT_THIS,
+            takeUntil(timer(14100)),
 
             // Update position of rectangle
-            IMPLEMENT_THIS,
+            scan((accumulator, _) => accumulator.map((x) => x + 1), [startProps.x, startProps.y]),
         )
-        .subscribe(({ x, y }: IMPLEMENT_THIS) => {
+        .subscribe(([x, y]) => {
             rect.setAttribute("x", String(x));
             rect.setAttribute("y", String(y));
         });

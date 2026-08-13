@@ -382,9 +382,9 @@ function reciprocal(n: number): number {
  * @returns `Just<number>` if all operations succeed, otherwise `Nothing`
  */
 const chainFunctions = (input: string): Maybe<number> => {
-    const parsed = parseNumber(input);  // Returns `Just<number>` if parsing succeeds, otherwise `Nothing`
-    const nonZeroCheck = flatMapMaybe(parsed, nonZero);  // Returns `Just<number>` if the number is not zero, otherwise `Nothing`
-    return mapMaybe(nonZeroCheck, reciprocal);  // Returns `Just<number>` with the reciprocal if all checks pass, otherwise `Nothing`
+    const parsed = parseNumber(input);                      // Returns `Just<number>` if parsing succeeds, otherwise `Nothing`
+    const nonZeroCheck = flatMapMaybe(parsed, nonZero);     // Returns `Just<number>` if the number is not zero, otherwise `Nothing`
+    return mapMaybe(nonZeroCheck, reciprocal);              // Returns `Just<number>` with the reciprocal if all checks pass, otherwise `Nothing`
 
 }
 

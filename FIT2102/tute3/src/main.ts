@@ -216,8 +216,6 @@ function animatedRect2() {
     const rect = initialiseRect(startProps, "animatedRect2");
 
     /** Write your code after here */
-
-
     const moveDownRight$ = interval(60)
         .pipe(
             // Stop taking values after some amount of time
@@ -236,8 +234,6 @@ function animatedRect2() {
  * Exercise 4
  *
  * Create and control a rectangle using the keyboard!
- *
- *
  * /Challenge/: Try to make the rectangle move smoothly! This may
  *  require some research and changing the way we implement movement.
  */
@@ -245,13 +241,9 @@ function keyboardControl() {
     const rect = initialiseRect(startProps, "moveableRect");
 
     /** Write your code after here */
-
     const key$ = fromEvent<KeyboardEvent>(document, "keydown");
-
     /**
      * Create an observable for a particular keypress.
-     *
-     * Reference for KeyBoard events https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
      *
      * @param keyCode
      * @param IMPLEMENT_THIS Add as many properties as you want to
@@ -259,36 +251,42 @@ function keyboardControl() {
      * @returns Observable stream that indicates changes in state for
      *  the particular keypress
      */
-    const fromKey = (keyCode: string, IMPLEMENT_THIS: IMPLEMENT_THIS) =>
+    const fromKey = (keyCode: string, movement: {axis: string, amount: number }) =>
         key$.pipe(
             filter(({ code }) => code === keyCode),
-            map(() => IMPLEMENT_THIS),
+            map(() => movement),
         );
 
     /**
      * /Hint/: QW4gb2JqZWN0IGxpa2UgeyBheGlzOiAneCcgfCAneScsIGFtb3VudDogbnVtYmVyIH0gY2FuIGJlIHVzZWQgdG8gcmVwcmVzZW50IGEgcGFydGljdWxhciBrZXlwcmVzcywgZS5nLiBQcmVzc2luZyBLZXlBIG1pZ2h0IHByb2R1Y2UgeyBheGlzOiAneCcsIGFtb3VudDogLTEwIH0=
      */
-
+    const step = 10;
     /** Decrease x */
-    const left$ = fromKey("KeyA", IMPLEMENT_THIS);
+    const left$ = fromKey("KeyA", { axis: 'x', amount: -step} as const);
     /** Decrease y */
-    const up$ = fromKey("KeyW", IMPLEMENT_THIS);
+    const up$ = fromKey("KeyW",  { axis: 'y', amount: -step} as const);
     /** Increase x */
-    const right$ = fromKey("KeyD", IMPLEMENT_THIS);
+    const right$ = fromKey("KeyD", { axis: 'x', amount: step} as const);
     /** Increase y */
-    const down$ = fromKey("KeyS", IMPLEMENT_THIS);
+    const down$ = fromKey("KeyS",  { axis: 'y', amount: step} as const);
 
+    const startPos = {
+        x: startProps.x,
+        y: startProps.y
+    }
+    
     /**
-     * /Hint/: What operator can we use to merge observables?
-     *         Have a look through the operators we covered in the
-     *         readings.
-     *
-     * /Hint 2/: This should make use of the scan function
      */
-
-    IMPLEMENT_THIS(left$, down$, up$, right$)
-        .pipe()
-        .subscribe(({ x, y }: IMPLEMENT_THIS) => {
+    merge(left$, down$, up$, right$)
+        .pipe(
+            scan((currentPos, movement) => {
+                if (movement.axis === 'x') {
+                    return {x: currentPos.x + movement.amount, y: currentPos.y};
+                } else {
+                    return {x: currentPos.x, y: currentPos.y + movement.amount};
+                }
+            }, startPos))
+        .subscribe(({ x, y }: { x: number; y: number }) => {
             rect.setAttribute("x", String(x));
             rect.setAttribute("y", String(y));
         });
@@ -338,8 +336,16 @@ function printWithDelay() {
     );
 
     /** Write your code after here */
-
-    csvText$.pipe(IMPLEMENT_THIS).subscribe(IMPLEMENT_THIS);
+    csvText$.pipe( 
+         switchMap(text => text.trim().split('\n')),    // Split lines for easier parsing
+         mergeMap(line => {                     
+            const [delayString, rest] = line.split(',');
+            const Sdelay = parseInt(delayString);
+            return of(rest).pipe(delay(Sdelay * 1000))      // of() returns observable so we can use .pipe()
+         })
+    ).subscribe({
+        next: (text) => console.log(text)
+    });
 }
 /**
  * Do Not Modify

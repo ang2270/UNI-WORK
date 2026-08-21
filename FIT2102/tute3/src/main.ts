@@ -337,7 +337,7 @@ function printWithDelay() {
 
     /** Write your code after here */
     csvText$.pipe( 
-         switchMap(text => text.trim().split('\n')),    // Split lines for easier parsing
+         switchMap(text => text.trim().split('\n')),    // Split lines for easier parsing returns array of strings (no spaces)
          mergeMap(line => {                     
             const [delayString, rest] = line.split(',');
             const Sdelay = parseInt(delayString);

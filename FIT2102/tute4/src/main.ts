@@ -87,6 +87,18 @@ const main = () => {
 
     const initialState: State = { y: Constants.GROUND, v_V: 0, noB: 10, grounded: false };
 
+        /*****************************************************************
+     * Exercise 6 — Add Random Jump Strength
+     *
+     * Replace the fixed jump velocity with a random one using a stream of
+     * random numbers generated each time the dot jumps.
+     *
+     * Tips:
+     * - Convert the number in [-1, 1] to a jump strength (e.g. in [-12, -6])
+     * - Edits should be done throughout the code.
+     *****************************************************************/
+
+
     /*****************************************************************
      * Exercise 2 — Create the jump stream
      *
@@ -96,17 +108,14 @@ const main = () => {
      * For now, each jump should emit a **fixed** velocity upward (e.g. -10),
      *
      * This should produce a stream of (state) => newState functions.
-     * Tips:
-     * - Convert the number in [-1, 1] to a jump strength (e.g. in [-12, -6])
-     * - Edits should be done throughout the code.
      *****************************************************************/
-    const jump$: Observable<(s: State) => State> = 
-    fromEvent<KeyboardEvent>(
-        document,
-        "keydown",
-    ).pipe(
-        filter(({code})=>code === 'Space'),
-        map(_ => s =>  ({ ...s, v_V: -10 }) ));  
+    // fromEvent emits stream to createRNG which returns a function,                                                                                        this is invoked with the RNG seed
+    const jump$: Observable<(s: State) => State> = createRngStreamFromSource(fromEvent<KeyboardEvent>(document,"keydown").pipe(filter(({code})=>code === 'Space')))(Constants.SEED) 
+        .pipe(      // The observable:number is piped into the jump logic
+        map(randomV => s => {
+            const jump_v = randomV > 0 ? randomV*-15 : randomV*15
+            return { ...s, v_V: jump_v };
+         }));
 
     /*****************************************************************
      * Exercise 3 — Create the tick stream
@@ -155,17 +164,6 @@ const main = () => {
         scan((state, reducerFn) => reducerFn(state), initialState),
     );
 
-
-    /*****************************************************************
-     * Exercise 6 — Add Random Jump Strength
-     *
-     * Replace the fixed jump velocity with a random one using a stream of
-     * random numbers generated each time the dot jumps.
-     *
-     * Tips:
-     * - Convert the number in [-1, 1] to a jump strength (e.g. in [-12, -6])
-     * - Edits should be done throughout the code.
-     *****************************************************************/
 
     /*****************************************************************
      * Exercise 7 — Full game restart using `switchMap`

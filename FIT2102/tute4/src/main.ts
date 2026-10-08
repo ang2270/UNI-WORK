@@ -199,7 +199,7 @@ const main = () => {
     const bounceCounter = document.getElementById("numBounces") as HTMLElement;
     restart$.subscribe(state => {
         dot.style.top = state.y.toString() + 'px'
-        bounceCounter.textContent = state.noB.toString() + 'px'
+        bounceCounter.textContent = state.noB.toString() 
     });
 };
 

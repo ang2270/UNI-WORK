@@ -1,0 +1,4 @@
+cradle:
+    stack:
+    - path: "src"
+      component: "applied6:exe:watch"

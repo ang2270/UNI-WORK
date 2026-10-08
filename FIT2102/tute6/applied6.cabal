@@ -1,0 +1,80 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.39.6.
+--
+-- see: https://github.com/sol/hpack
+
+name:           applied6
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/intro#readme>
+homepage:       https://github.com/githubuser/intro#readme
+bug-reports:    https://github.com/githubuser/intro/issues
+author:         Arthur Mahéo, Tim Dwyer, Rhys Newbury and Nick Wang
+maintainer:     tim.dwyer@monash.edu
+copyright:      2019 Arthur Mahéo and Tim Dwyer, 2023 Nick Wang
+license:        BSD3
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/intro
+
+library
+  exposed-modules:
+      BinTree
+      Examples
+      MappingMaybe
+      NaryTree
+      List
+      RoseTree
+  other-modules:
+      Paths_applied6
+  hs-source-dirs:
+      src
+      src/supplementary
+  default-extensions:
+      InstanceSigs
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable watch
+  main-is: Spec.hs
+  other-modules:
+      Watch
+      Paths_applied6
+  hs-source-dirs:
+      test
+  default-extensions:
+      InstanceSigs
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Glob
+    , ansi-terminal
+    , base >=4.7 && <5
+    , doctest
+    , filepath
+    , fsnotify
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Watch
+      Paths_applied6
+  hs-source-dirs:
+      test
+  default-extensions:
+      InstanceSigs
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Glob
+    , ansi-terminal
+    , base >=4.7 && <5
+    , doctest
+    , filepath
+    , fsnotify
+  default-language: Haskell2010

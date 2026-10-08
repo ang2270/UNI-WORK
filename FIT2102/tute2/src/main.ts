@@ -225,7 +225,7 @@ const mapBinaryTree = <T, U>(
 
 type NaryTree<T> = Readonly<{
     data: T;
-    children: [];
+    children: readonly NaryTree<T>[];
 }>;
 
 /**
@@ -236,8 +236,8 @@ type NaryTree<T> = Readonly<{
  * @returns A new immutable NaryTree<T> node
  *
  */
-const naryTree = <T>(data: IMPLEMENT_THIS, children: IMPLEMENT_THIS = []): IMPLEMENT_THIS => {
-    return IMPLEMENT_THIS;
+const naryTree = <T>(data: T, children: readonly NaryTree<T>[] = []): NaryTree<T> => {
+    return  {data, children} 
 };
 
 const naryTreeExample = naryTree(1, [
@@ -255,8 +255,11 @@ const naryTreeExample = naryTree(1, [
  * @returns The maximum depth of the tree
  *
  */
-const depthNaryTree = <T>(tree: IMPLEMENT_THIS): IMPLEMENT_THIS => {
-    return IMPLEMENT_THIS;
+const depthNaryTree = <T>(tree: NaryTree<T>): number => {
+    const childDepths = tree.children.map(child => depthNaryTree(child));
+    const maxChildDepth = childDepths.length > 0 ? Math.max(...childDepths) : 0;
+
+    return maxChildDepth + 1;
 };
 
 /**
@@ -268,9 +271,14 @@ const depthNaryTree = <T>(tree: IMPLEMENT_THIS): IMPLEMENT_THIS => {
  *
  */
 const mapNaryTree = <T, U>(
-    tree: IMPLEMENT_THIS,
-    fn: IMPLEMENT_THIS,
-): IMPLEMENT_THIS => IMPLEMENT_THIS;
+    tree: NaryTree<T>,
+    fn: (x: T) => U,
+): NaryTree<U> => { return naryTree(
+    fn(tree.data),
+    tree.children.map(child => mapNaryTree(child, fn))
+); }
+
+
 
 /*****************************************************************
  * Exercise 5 — Maybe Types
@@ -316,7 +324,7 @@ function addOne(maybeNum: Maybe<number>): Maybe<number> {
  * @returns A `Just<U>` with the transformed value, or `Nothing` if the input was `Nothing`
  */
 function mapMaybe<T, U>(m: Maybe<T>, fn: (value: T) => U): Maybe<U> {
-    return IMPLEMENT_THIS;
+    return m ? just(fn(m.Just)) : nothing;
 }
 
 /**
@@ -328,7 +336,7 @@ function mapMaybe<T, U>(m: Maybe<T>, fn: (value: T) => U): Maybe<U> {
  * @returns A flattened `Maybe<U>`, or `Nothing` if the input was `Nothing`
  */
 function flatMapMaybe<T, U>(m: Maybe<T>, fn: (value: T) => Maybe<U>): Maybe<U> {
-    return IMPLEMENT_THIS;
+    return m ? fn(m.Just) : nothing;
 }
 
 /**
@@ -373,7 +381,13 @@ function reciprocal(n: number): number {
  * @param input - The input string to transform
  * @returns `Just<number>` if all operations succeed, otherwise `Nothing`
  */
-const chainFunctions = (input: string): Maybe<number> => IMPLEMENT_THIS;
+const chainFunctions = (input: string): Maybe<number> => {
+    const parsed = parseNumber(input);                      // Returns `Just<number>` if parsing succeeds, otherwise `Nothing`
+    const nonZeroCheck = flatMapMaybe(parsed, nonZero);     // Returns `Just<number>` if the number is not zero, otherwise `Nothing`
+    return mapMaybe(nonZeroCheck, reciprocal);              // Returns `Just<number>` with the reciprocal if all checks pass, otherwise `Nothing`
+
+}
+
 
 export {
     anObject,

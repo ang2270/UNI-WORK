@@ -168,7 +168,7 @@ const removeOnes = function(array) {
  * @returns Sum of items in arr
  */
 const sumArray = function(array){
-    return array.reduce(())
+    return array.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 }
 
 const multiplyArray = (n, array) => {

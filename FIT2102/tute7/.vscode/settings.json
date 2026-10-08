@@ -1,0 +1,4 @@
+{
+    "haskell.plugin.eval.codeLensOn": false,
+    "haskell.manageHLS": "PATH"
+}

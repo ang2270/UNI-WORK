@@ -266,6 +266,8 @@ jsonObject = JObject <$> (isTok '{' *> (kv `sepBy` commaTok) <* isTok '}')
     kv :: Parser (String, JsonValue)
     kv = (,) <$> tok quoteString <* isTok ':' <*> tok json
 
+-- (,) reutrns a tuple (key, value)
+
 -- | Parse a JSON value
 -- Either a Boolean, Integer, String, Null
 --
